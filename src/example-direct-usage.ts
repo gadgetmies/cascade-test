@@ -60,5 +60,19 @@ test({
       }
       return null;
     }
+  },
+
+  'Skip Examples': {
+    skip: () => {
+      // This test will be skipped until a future date
+      return {
+        reason: 'Feature under development',
+        until: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) // 3 days from now
+      };
+    },
+
+    'should be skipped': (): string | null => {
+      return 'This test should be skipped';
+    }
   }
 });

@@ -13,6 +13,7 @@ import {
   SetupFunction,
   TeardownFunction,
   SkipFunction,
+  SkipConfig,
   TestConfig,
   TestReporter,
   TestInfo,
@@ -37,7 +38,7 @@ type TestStructure = [string, TestContent];
 const DefaultAssertionTimeout = 5000;
 const DefaultGroupTimeout = 10000;
 
-const noop = (): void => {};
+const noop = (): null => null;
 
 const timeout = (timeoutMs: number): TimeoutConfig => {
   let id: NodeJS.Timeout;
@@ -206,7 +207,23 @@ ${printName(node[0], style)}${
 
       if (skip !== noop) {
         const skipResult = skip();
-        skippingReason = skippingReason || (skipResult as boolean | string | undefined);
+        if (skipResult && typeof skipResult === 'object' && 'reason' in skipResult && 'until' in skipResult) {
+          const skipConfig = skipResult as SkipConfig;
+          const skipDate = new Date(skipConfig.until);
+          const now = new Date();
+          
+          if (skipDate > now) {
+            skippingReason = skipConfig.reason;
+          } else {
+            return [[
+              'skip-expired',
+              {
+                skipped: false,
+                error: `Test skip expired on ${skipDate.toISOString()}. Reason: ${skipConfig.reason}`,
+              }
+            ] as TestStructure];
+          }
+        }
       }
 
       let setupResult: TestContext | undefined;
@@ -234,7 +251,7 @@ ${printName(node[0], style)}${
       for (const key of Object.keys(rest)) {
         console.log(
           `${getIndentString(indent)}• ${key} ${
-            skippingReason ? `SKIPPING${skippingReason !== true ? ` (reason: ${skippingReason})` : ''}` : ''
+            skippingReason ? `SKIPPING (reason: ${skippingReason})` : ''
           }`.blue,
         );
         const restElement = rest[key];

@@ -56,5 +56,33 @@ test({
       }
       return null;
     }
+  },
+
+  'Skip Examples': {
+    skip: () => {
+      // This test will be skipped until a future date
+      return {
+        reason: 'Feature not implemented yet',
+        until: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
+      };
+    },
+
+    'should be skipped': (): string | null => {
+      return 'This test should be skipped';
+    },
+
+    'Expired Skip': {
+      skip: () => {
+        // This test will fail because the skip date is in the past
+        return {
+          reason: 'This skip has expired',
+          until: new Date(Date.now() - 24 * 60 * 60 * 1000) // 1 day ago
+        };
+      },
+
+      'should fail due to expired skip': (): string | null => {
+        return 'This test should fail due to expired skip';
+      }
+    }
   }
 });

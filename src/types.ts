@@ -22,9 +22,17 @@ export type SetupFunction = (parentContext?: TestContext) => Promise<TestContext
 export type TeardownFunction = (context?: TestContext) => Promise<void> | void;
 
 /**
+ * Skip configuration object
+ */
+export interface SkipConfig {
+  reason: string;
+  until: Date | string;
+}
+
+/**
  * Skip function that determines if tests should be skipped
  */
-export type SkipFunction = () => boolean | string | null | undefined;
+export type SkipFunction = () => SkipConfig | null | undefined;
 
 /**
  * Test suite configuration

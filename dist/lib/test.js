@@ -5,7 +5,7 @@ import 'colors';
 import { createReporter, detectCI, addCIAnnotations } from './reporters.js';
 const DefaultAssertionTimeout = 5000;
 const DefaultGroupTimeout = 10000;
-const noop = () => { };
+const noop = () => null;
 const timeout = (timeoutMs) => {
     let id;
     const promise = new Promise((_, reject) => {
@@ -126,7 +126,23 @@ ${printName(node[0], style)}${R.is(Array, node[1])
             const { setup = noop, teardown = noop, skip = noop, ...rest } = suite;
             if (skip !== noop) {
                 const skipResult = skip();
-                skippingReason = skippingReason || skipResult;
+                if (skipResult && typeof skipResult === 'object' && 'reason' in skipResult && 'until' in skipResult) {
+                    const skipConfig = skipResult;
+                    const skipDate = new Date(skipConfig.until);
+                    const now = new Date();
+                    if (skipDate > now) {
+                        skippingReason = skipConfig.reason;
+                    }
+                    else {
+                        return [[
+                                'skip-expired',
+                                {
+                                    skipped: false,
+                                    error: `Test skip expired on ${skipDate.toISOString()}. Reason: ${skipConfig.reason}`,
+                                }
+                            ]];
+                    }
+                }
             }
             let setupResult;
             if (skippingReason === undefined) {
@@ -150,7 +166,7 @@ ${printName(node[0], style)}${R.is(Array, node[1])
             }
             const result = [];
             for (const key of Object.keys(rest)) {
-                console.log(`${getIndentString(indent)}• ${key} ${skippingReason ? `SKIPPING${skippingReason !== true ? ` (reason: ${skippingReason})` : ''}` : ''}`.blue);
+                console.log(`${getIndentString(indent)}• ${key} ${skippingReason ? `SKIPPING (reason: ${skippingReason})` : ''}`.blue);
                 const restElement = rest[key];
                 let singleResult;
                 const timeouts = [];

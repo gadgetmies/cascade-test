@@ -102,26 +102,54 @@ const { test } = require('cascade-test')
 
 test({
   skip: () => {
-    // Skip all tests in this suite
-    return 'Feature not implemented yet'
+    // Skip all tests in this suite until a specific date
+    return {
+      reason: 'Feature not implemented yet',
+      until: new Date('2024-12-31') // Skip until end of year
+    }
   },
 
   'should be skipped': () => {
-    // This test will be skipped
+    // This test will be skipped until the specified date
   },
 
   'Conditional Tests': {
     skip: () => {
-      // Skip conditionally
-      return process.env.NODE_ENV === 'production' ? 'Skipping in production' : false
+      // Skip conditionally with expiration
+      return process.env.NODE_ENV === 'production' ? {
+        reason: 'Skipping in production',
+        until: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
+      } : null
     },
 
     'should run in development': () => {
       // This test runs only in development
     }
+  },
+
+  'Expired Skip Example': {
+    skip: () => {
+      // This will cause the test to FAIL because the skip date is in the past
+      return {
+        reason: 'This skip has expired',
+        until: new Date(Date.now() - 24 * 60 * 60 * 1000) // 1 day ago
+      }
+    },
+
+    'should fail due to expired skip': () => {
+      // This test will fail because the skip date has passed
+    }
   }
 })
 ```
+
+#### Skip Configuration
+
+The `skip` function must return an object with:
+- `reason` (string): Explanation for why the test is being skipped
+- `until` (Date | string): Date until which the test should be skipped
+
+If the `until` date is in the past, the test will **fail** instead of being skipped, ensuring that temporary skips don't become permanent.
 
 ## API Reference
 
@@ -149,7 +177,8 @@ The main test function that runs a test suite.
 - Can be async/Promise-based
 
 **Skip Functions:**
-- `skip()`: Return `true` to skip all tests, or string for skip reason, or a falsy value (`false, null, undefined`) to run tests
+- `skip()`: Return a `SkipConfig` object to skip tests until a specific date, or `null`/`undefined` to run tests
+- If the skip date is in the past, the test will fail instead of being skipped
 
 ### `fileUtils.recursivelyFindByRegex(base, regex)`
 
