@@ -6,20 +6,81 @@ import yargsFactory from 'yargs/yargs';
 import type { Argv, ArgumentsCamelCase } from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import * as path from 'path';
+import * as fs from 'fs';
 import 'colors';
 
 interface TestResult {
   test: string;
   code: number;
+  output?: string;
 }
 
-const runTest = (test: string): Promise<number> => {
+const runTest = (test: string): Promise<TestResult> => {
   const child: ChildProcess = fork(test);
+  let output = '';
 
-  return new Promise<number>(function (resolve: (value: number) => void, reject: (reason?: Error) => void) {
+  return new Promise<TestResult>(function (resolve: (value: TestResult) => void, reject: (reason?: Error) => void) {
+    child.stdout?.on('data', (data) => {
+      output += data.toString();
+    });
+    
+    child.stderr?.on('data', (data) => {
+      output += data.toString();
+    });
+
     child.addListener('error', reject);
-    child.addListener('exit', resolve);
+    child.addListener('exit', (code) => {
+      resolve({ test, code: code || 0, output });
+    });
   });
+};
+
+const parseFailedTests = (output: string): Array<{ path: string; error: string }> => {
+  const failedTests: Array<{ path: string; error: string }> = [];
+  
+  // Split output into lines and look for the FAILED TESTS section
+  const lines = output.split('\n');
+  let inFailedTestsSection = false;
+  let currentTest: { path?: string; error?: string } = {};
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    
+    if (line.includes('FAILED TESTS')) {
+      inFailedTestsSection = true;
+      continue;
+    }
+    
+    if (inFailedTestsSection && line.includes('='.repeat(60))) {
+      // End of section
+      if (currentTest.path && currentTest.error) {
+        failedTests.push({
+          path: currentTest.path,
+          error: currentTest.error
+        });
+      }
+      break;
+    }
+    
+    if (inFailedTestsSection) {
+      // Look for test path line: • path → path → path
+      if (line.trim().startsWith('•') && line.includes('→')) {
+        if (currentTest.path && currentTest.error) {
+          failedTests.push({
+            path: currentTest.path,
+            error: currentTest.error
+          });
+        }
+        currentTest = { path: line.trim().substring(1).trim() };
+      }
+      // Look for error line: Error: message
+      else if (line.trim().startsWith('Error:')) {
+        currentTest.error = line.trim().substring(6).trim();
+      }
+    }
+  }
+  
+  return failedTests;
 };
 
 const main = async (testPath: string, regex: RegExp = /\.(js|ts)$/): Promise<void> => {
@@ -28,8 +89,8 @@ const main = async (testPath: string, regex: RegExp = /\.(js|ts)$/): Promise<voi
   const exitStatuses: TestResult[] = [];
   for (const test of testFiles) {
     try {
-      const code = await runTest(test);
-      exitStatuses.push({ test, code });
+      const result = await runTest(test);
+      exitStatuses.push(result);
     } catch (e) {
       console.error(`${test} execution failed!`, e);
       exitStatuses.push({ test, code: -1 });
@@ -38,10 +99,36 @@ const main = async (testPath: string, regex: RegExp = /\.(js|ts)$/): Promise<voi
 
   const failedTests = R.reject(R.propEq(0, 'code'), exitStatuses);
   if (failedTests.length !== 0) {
-    console.error(`${failedTests.length} tests failed:`.red);
-    for (const { test } of failedTests) {
-      console.error(`• ${test}`.red);
+    console.log('\n' + '='.repeat(60).red);
+    console.log('FAILED TESTS'.red.bold);
+    console.log('='.repeat(60).red);
+    
+    for (const { test, output } of failedTests) {
+      // Try to read failed test information from temporary file
+      const tempFile = path.join(process.cwd(), '.cascade-test-failures.json');
+      try {
+        if (fs.existsSync(tempFile)) {
+          const failedTestData = JSON.parse(fs.readFileSync(tempFile, 'utf8'));
+          for (const failedTest of failedTestData) {
+            console.log(`\n• ${failedTest.path.join(' → ')}`.red);
+            console.log(`  Error: ${failedTest.error}`.yellow);
+          }
+          // Clean up the temporary file
+          fs.unlinkSync(tempFile);
+        }
+      } catch (e) {
+        // Fall back to parsing output if file reading fails
+        if (output) {
+          const parsedFailedTests = parseFailedTests(output);
+          for (const failedTest of parsedFailedTests) {
+            console.log(`\n• ${failedTest.path}`.red);
+            console.log(`  Error: ${failedTest.error}`.yellow);
+          }
+        }
+      }
     }
+    
+    console.log('\n' + '='.repeat(60).red);
     process.exit(1);
   }
 

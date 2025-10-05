@@ -1,5 +1,7 @@
 import * as R from 'ramda';
 import * as L from 'partial.lenses';
+import * as fs from 'fs';
+import * as path from 'path';
 import 'colors';
 import {
   TestSuite,
@@ -27,7 +29,8 @@ interface TestResult {
   error: string | null;
 }
 
-type TestStructure = [string, TestResult | TestDescription[]];
+type TestContent = TestResult | TestDescription[];
+type TestStructure = [string, TestContent];
 
 const DefaultAssertionTimeout = 5000;
 const DefaultGroupTimeout = 10000;
@@ -122,6 +125,47 @@ const test: TestFunctionType = async (suite: TestSuite): Promise<void> => {
     style === 'console' ? children.join('\n') : `<ul>\n${children.map((c) => `<li>${c}</li>\n`).join('')}\n</ul>\n`;
 
   const getIndentString = (indent: number): string => Array(indent).join(' ');
+
+  interface FailedTest {
+    path: string[];
+    error: string;
+  }
+
+  const isTestGroup = (content: TestContent): content is TestDescription[] => {
+    return Array.isArray(content);
+  };
+
+  const isTestResult = (content: TestContent): content is TestResult => {
+    return !Array.isArray(content) && 'error' in content;
+  };
+
+  const isTestStructure = (description: TestDescription): description is [string, TestDescription[]] => {
+    return description.length === 2;
+  };
+
+  const collectFailedTests = (structure: TestStructure, currentPath: string[] = []): FailedTest[] => {
+    const [name, content] = structure;
+    const fullPath = [...currentPath, name];
+    const failedTests: FailedTest[] = [];
+
+    if (isTestGroup(content)) {
+      for (const child of content) {
+        if (isTestStructure(child)) {
+          failedTests.push(...collectFailedTests(child, fullPath));
+        }
+        // TODO: In what case would the content be a list of strings and contain only one element?
+        // Skip [string] only descriptions as they don't contain test results
+      }
+    } else if (isTestResult(content) && content.error) {
+      // This is a failed test
+      failedTests.push({
+        path: fullPath,
+        error: content.error
+      });
+    }
+
+    return failedTests;
+  };
   
   const printStructure = (node: TestStructure, style: string = 'console', indent: number = 2): string => {
     const indentString = getIndentString(indent);
@@ -243,10 +287,37 @@ ${printName(node[0], style)}${
     console.log('Running test suite: \n'.cyan, testFile?.cyan || '');
     const result = [testFile, await run(suite)] as TestStructure;
     console.log(printStructure(result));
-    const errors = L.collect(L.satisfying(R.allPass([R.is(Object), R.has('error'), R.propIs(String, 'error')])), result);
-    const exitCode = errors.length === 0 ? 0 : 1;
-    console.log(`Test suite finished ${exitCode === 0 ? 'successfully' : `with ${errors.length} errors`}`);
-    process.exit(exitCode);
+    
+    const failedTests = collectFailedTests(result);
+    const exitCode = failedTests.length === 0 ? 0 : 1;
+    
+    console.log(`\nTest suite finished ${exitCode === 0 ? 'successfully' : `with ${failedTests.length} errors`}`);
+    
+    if (failedTests.length > 0) {
+      console.log('\n' + '='.repeat(60).red);
+      console.log(`FAILED TESTS: ${testFile}`.red.bold);
+      console.log('='.repeat(60).red);
+      
+      failedTests.forEach((failedTest) => {
+        const pathString = failedTest.path.slice(1).join(' → ');
+        console.log(`\n• ${pathString}`.red);
+        console.log(`  Error: ${failedTest.error}`.yellow);
+      });
+      
+      console.log('\n' + '='.repeat(60).red);
+      
+      // Write failed test information to a temporary file for CLI consumption
+      const tempFile = path.join(process.cwd(), '.cascade-test-failures.json');
+      try {
+        fs.writeFileSync(tempFile, JSON.stringify(failedTests, null, 2));
+      } catch (e) {
+        // Ignore file write errors
+      }
+    }
+    
+    // Don't exit immediately - let the process exit naturally
+    // This allows the parent process to capture the output
+    setTimeout(() => process.exit(exitCode), 0);
   } catch (e) {
     console.error(`Test suite execution failed: ${(e as Error).toString()}`.red);
     console.error(e);
