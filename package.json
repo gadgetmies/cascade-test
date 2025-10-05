@@ -1,0 +1,42 @@
+{
+  "name": "cascade-test",
+  "version": "0.0.1",
+  "description": "A test framework where context cascades through your test hierarchy. Plain JavaScript objects with automatic context passing.",
+  "main": "index.js",
+  "bin": {
+    "cascade-test": "./bin/run-tests.js"
+  },
+  "scripts": {
+    "test": "node bin/run-tests.js test"
+  },
+  "keywords": [
+    "test",
+    "testing",
+    "framework",
+    "async",
+    "cascade",
+    "context",
+    "hierarchy"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "ramda": "^0.29.1",
+    "partial.lenses": "^14.17.0",
+    "colors": "^1.4.0",
+    "bluebird": "^3.7.2",
+    "yargs": "^17.7.2"
+  },
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gadgetmies/cascade-test.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gadgetmies/cascade-test/issues"
+  },
+  "homepage": "https://github.com/gadgetmies/cascade-test#readme"
+}
+
