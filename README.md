@@ -180,6 +180,39 @@ cascade-test test/
 - `--regex, -r`: Regex pattern to filter files (default: `/\.js$/`)
 - `--help, -h`: Show help information
 
+### Environment Variables
+
+The framework supports environment variables through standard Node.js `process.env`. You can use dotenv or other environment variable solutions with the CLI runner.
+
+#### Using dotenv-cli (Recommended)
+
+Install dotenv-cli globally and use it with npx:
+
+```bash
+# Install dotenv-cli
+npm install -g dotenv-cli
+
+# Run tests with .env file
+dotenv npx cascade-test test/
+
+# Use specific environment file
+dotenv -e .env.test npx cascade-test test/
+```
+
+#### `package.json` Scripts
+
+Add scripts to your `package.json` for easy environment management e.g.:
+
+```json
+{
+  "scripts": {
+    "test": "dotenv npx cascade-test test/",
+    "test:ci": "NODE_ENV=test dotenv -e .env.ci npx cascade-test test/",
+    "test:dev": "NODE_ENV=development API_URL=http://localhost:3000 dotenv -e .env.dev npx cascade-test test/"
+  }
+}
+```
+
 ## Configuration
 
 ### Timeouts
