@@ -1,13 +1,19 @@
 {
   "name": "cascade-test",
   "version": "0.0.1",
-  "description": "A test framework where context cascades through your test hierarchy. Plain JavaScript objects with automatic context passing.",
-  "main": "index.js",
+  "description": "A test framework where context cascades through your test hierarchy. Built with TypeScript for type safety and plain JavaScript objects with automatic context passing.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": {
-    "cascade-test": "./bin/run-tests.js"
+    "cascade-test": "./dist/bin/run-tests.js"
   },
   "scripts": {
-    "test": "node bin/run-tests.js test"
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build",
+    "test": "npm run build && node dist/bin/run-tests.js dist/test",
+    "test:dev": "npm run build && node dist/bin/run-tests.js dist/test"
   },
   "keywords": [
     "test",
@@ -26,6 +32,12 @@
     "colors": "^1.4.0",
     "bluebird": "^3.7.2",
     "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/ramda": "^0.29.0",
+    "@types/yargs": "^17.0.0",
+    "typescript": "^5.0.0"
   },
   "engines": {
     "node": ">=12.0.0"
