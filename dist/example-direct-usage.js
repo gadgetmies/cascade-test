@@ -1,8 +1,6 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 // Example of using the test framework directly
-const index_1 = require("./index");
-(0, index_1.test)({
+import { test } from './index.js';
+test({
     setup: async () => {
         console.log('Setting up example...');
         return {

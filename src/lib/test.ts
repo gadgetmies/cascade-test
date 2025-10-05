@@ -18,8 +18,8 @@ import {
   TestInfo,
   TestResult,
   InternalTestResult
-} from '../types';
-import { createReporter, detectCI, addCIAnnotations } from './reporters';
+} from '../types.js';
+import { createReporter, detectCI, addCIAnnotations } from './reporters.js';
 
 // Internal types for test execution
 interface TestNode {

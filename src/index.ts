@@ -1,7 +1,7 @@
-import test from './lib/test';
-import fileUtils from './lib/file-utils';
-import { createReporter, detectCI, addCIAnnotations } from './lib/reporters';
-import { CascadeTestModule } from './types';
+import test from './lib/test.js';
+import fileUtils from './lib/file-utils.js';
+import { createReporter, detectCI, addCIAnnotations } from './lib/reporters.js';
+import { CascadeTestModule } from './types.js';
 
 const cascadeTest: CascadeTestModule = {
   test,
@@ -30,6 +30,6 @@ export type {
   TestResult,
   CIEnvironment,
   TestReporterType
-} from './types';
+} from './types.js';
 
 export default cascadeTest;

@@ -1,52 +1,14 @@
 #!/usr/bin/env node
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const R = __importStar(require("ramda"));
-const file_utils_1 = require("../lib/file-utils");
-const child_process_1 = require("child_process");
-const yargs_1 = __importDefault(require("yargs/yargs"));
-const helpers_1 = require("yargs/helpers");
-const path = __importStar(require("path"));
-const fs = __importStar(require("fs"));
-require("colors");
+import * as R from 'ramda';
+import { recursivelyFindByRegex } from '../lib/file-utils.js';
+import { fork } from 'child_process';
+import yargsFactory from 'yargs/yargs';
+import { hideBin } from 'yargs/helpers';
+import * as path from 'path';
+import * as fs from 'fs';
+import 'colors';
 const runTest = (test, config = {}) => {
-    const child = (0, child_process_1.fork)(test, [], {
+    const child = fork(test, [], {
         env: {
             ...process.env,
             CASCADE_TEST_REPORTER: config.reporter || 'console',
@@ -110,7 +72,7 @@ const parseFailedTests = (output) => {
     return failedTests;
 };
 const main = async (testPath, regex = /\.(js|ts)$/, config = {}) => {
-    const testFiles = (0, file_utils_1.recursivelyFindByRegex)(path.resolve(`${process.cwd()}/${testPath}`), regex);
+    const testFiles = recursivelyFindByRegex(path.resolve(`${process.cwd()}/${testPath}`), regex);
     const exitStatuses = [];
     for (const test of testFiles) {
         try {
@@ -158,7 +120,7 @@ const main = async (testPath, regex = /\.(js|ts)$/, config = {}) => {
     console.log('All tests passed!'.green);
     process.exit(0);
 };
-const cli = (0, yargs_1.default)((0, helpers_1.hideBin)(process.argv));
+const cli = yargsFactory(hideBin(process.argv));
 cli
     .usage('Usage: $0 <path> [options]')
     .command('$0 <path>', 'Runs tests in path filtered by regex if given', (y) => y

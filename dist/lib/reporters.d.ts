@@ -1,4 +1,4 @@
-import { TestReporter, TestInfo, TestResult, CIEnvironment } from '../types';
+import { TestReporter, TestInfo, TestResult, CIEnvironment } from '../types.js';
 /**
  * Detect CI environment from environment variables
  */

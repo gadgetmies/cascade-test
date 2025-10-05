@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import * as R from 'ramda';
-import { recursivelyFindByRegex } from '../lib/file-utils';
+import { recursivelyFindByRegex } from '../lib/file-utils.js';
 import { fork, ChildProcess } from 'child_process';
 import yargsFactory from 'yargs/yargs';
 import type { Argv, ArgumentsCamelCase } from 'yargs';

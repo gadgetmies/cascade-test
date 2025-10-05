@@ -1,45 +1,9 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.createReporter = exports.JSONReporter = exports.TAPReporter = exports.JUnitReporter = exports.ConsoleReporter = exports.addCIAnnotations = exports.detectCI = void 0;
-const fs = __importStar(require("fs"));
-const path = __importStar(require("path"));
+import * as fs from 'fs';
+import * as path from 'path';
 /**
  * Detect CI environment from environment variables
  */
-const detectCI = () => {
+export const detectCI = () => {
     if (process.env.JENKINS_URL)
         return 'jenkins';
     if (process.env.AZURE_DEVOPS || process.env.TF_BUILD)
@@ -50,11 +14,10 @@ const detectCI = () => {
         return 'github';
     return 'console';
 };
-exports.detectCI = detectCI;
 /**
  * Add CI-specific annotations to console output
  */
-const addCIAnnotations = (failedTests, ci) => {
+export const addCIAnnotations = (failedTests, ci) => {
     if (failedTests.length === 0)
         return;
     switch (ci) {
@@ -88,11 +51,10 @@ const addCIAnnotations = (failedTests, ci) => {
             break;
     }
 };
-exports.addCIAnnotations = addCIAnnotations;
 /**
  * Console reporter - maintains existing behavior
  */
-class ConsoleReporter {
+export class ConsoleReporter {
     constructor() {
         this.results = [];
     }
@@ -110,11 +72,10 @@ class ConsoleReporter {
         return ''; // Console output is handled elsewhere
     }
 }
-exports.ConsoleReporter = ConsoleReporter;
 /**
  * JUnit XML reporter
  */
-class JUnitReporter {
+export class JUnitReporter {
     constructor() {
         this.results = [];
         this.testFile = '';
@@ -160,11 +121,10 @@ ${testCases}
             .replace(/'/g, '&#39;');
     }
 }
-exports.JUnitReporter = JUnitReporter;
 /**
  * TAP (Test Anything Protocol) reporter
  */
-class TAPReporter {
+export class TAPReporter {
     constructor() {
         this.results = [];
     }
@@ -196,11 +156,10 @@ class TAPReporter {
 ${testLines}`;
     }
 }
-exports.TAPReporter = TAPReporter;
 /**
  * JSON reporter
  */
-class JSONReporter {
+export class JSONReporter {
     constructor() {
         this.results = [];
         this.testFile = '';
@@ -238,11 +197,10 @@ class JSONReporter {
         }, null, 2);
     }
 }
-exports.JSONReporter = JSONReporter;
 /**
  * Create a reporter instance
  */
-const createReporter = (type, outputFile) => {
+export const createReporter = (type, outputFile) => {
     let reporter;
     switch (type) {
         case 'junit':
@@ -276,5 +234,4 @@ const createReporter = (type, outputFile) => {
     }
     return reporter;
 };
-exports.createReporter = createReporter;
 //# sourceMappingURL=reporters.js.map
