@@ -10,6 +10,9 @@ A test framework where context cascades through your test hierarchy. Plain JavaS
 - **Test Skipping**: Skip tests conditionally with custom reasons
 - **File Discovery**: Automatic test file discovery with regex filtering
 - **CLI Runner**: Command-line tool for running multiple test files
+- **CI Integration**: Native support for Jenkins, Azure DevOps, GitLab CI, and GitHub Actions
+- **Multiple Reporters**: JUnit XML, TAP, JSON, and console output formats
+- **Auto-Detection**: Automatically detects CI environment and applies appropriate annotations
 
 ## Installation
 
@@ -177,8 +180,146 @@ cascade-test test/
 ### CLI Options
 
 - `path`: Directory to search for test files (required)
-- `--regex, -r`: Regex pattern to filter files (default: `/\.js$/`)
+- `--regex, -r`: Regex pattern to filter files (default: `/\.(js|ts)$/`)
+- `--reporter`: Test reporter to use (`console`, `junit`, `tap`, `json`)
+- `--output, -o`: Output file for structured reporters
+- `--ci`: CI environment for annotations (`jenkins`, `azure`, `gitlab`, `github`, `console`, `auto`)
 - `--help, -h`: Show help information
+
+### Test Reporters
+
+Cascade Test supports multiple output formats for different CI systems and use cases:
+
+#### Console Reporter (Default)
+```bash
+npx cascade-test test/
+# Outputs colored console output with test results
+```
+
+#### JUnit XML Reporter
+```bash
+npx cascade-test test/ --reporter=junit --output=test-results.xml
+# Generates JUnit XML format for Jenkins, Azure DevOps, and most CI systems
+```
+
+#### TAP Reporter
+```bash
+npx cascade-test test/ --reporter=tap --output=test-results.tap
+# Generates TAP (Test Anything Protocol) format for universal CI support
+```
+
+#### JSON Reporter
+```bash
+npx cascade-test test/ --reporter=json --output=test-results.json
+# Generates structured JSON output for custom integrations
+```
+
+### CI Integration
+
+Cascade Test automatically detects CI environments and provides platform-specific annotations for failed tests.
+
+#### Auto-Detection
+The framework automatically detects CI environments from environment variables:
+- `JENKINS_URL` → Jenkins
+- `AZURE_DEVOPS` or `TF_BUILD` → Azure DevOps  
+- `GITLAB_CI` → GitLab CI
+- `GITHUB_ACTIONS` → GitHub Actions
+
+#### Manual CI Configuration
+```bash
+# Jenkins annotations
+npx cascade-test test/ --ci=jenkins
+
+# Azure DevOps annotations  
+npx cascade-test test/ --ci=azure
+
+# GitLab CI annotations
+npx cascade-test test/ --ci=gitlab
+
+# GitHub Actions annotations
+npx cascade-test test/ --ci=github
+```
+
+#### CI-Specific Annotations
+When tests fail, the framework outputs platform-specific annotations:
+
+**Jenkins:**
+```
+##[error]Test failures detected
+##[error]Error Handling → should fail with custom error: This test intentionally fails
+```
+
+**Azure DevOps:**
+```
+##vso[task.logissue type=error]Test failures detected
+##vso[task.logissue type=error]Error Handling → should fail with custom error: This test intentionally fails
+```
+
+**GitLab CI / GitHub Actions:**
+```
+::error::Test failures detected
+::error::Error Handling → should fail with custom error: This test intentionally fails
+```
+
+#### CI Platform Setup Examples
+
+**Jenkins Pipeline:**
+```groovy
+pipeline {
+    agent any
+    stages {
+        stage('Test') {
+            steps {
+                sh 'npm install'
+                sh 'npx cascade-test test/ --reporter=junit --output=test-results.xml'
+                junit 'test-results.xml'
+            }
+        }
+    }
+}
+```
+
+**Azure DevOps Pipeline:**
+```yaml
+- task: NodeTool@0
+  inputs:
+    versionSpec: '18.x'
+- script: |
+    npm install
+    npx cascade-test test/ --reporter=junit --output=test-results.xml --ci=azure
+  displayName: 'Run Tests'
+- task: PublishTestResults@2
+  inputs:
+    testResultsFiles: 'test-results.xml'
+    testRunTitle: 'Cascade Test Results'
+```
+
+**GitLab CI:**
+```yaml
+test:
+  stage: test
+  script:
+    - npm install
+    - npx cascade-test test/ --reporter=junit --output=test-results.xml --ci=gitlab
+  artifacts:
+    reports:
+      junit: test-results.xml
+```
+
+**GitHub Actions:**
+```yaml
+- name: Run Tests
+  run: |
+    npm install
+    npx cascade-test test/ --reporter=junit --output=test-results.xml --ci=github
+- name: Publish Test Results
+  uses: dorny/test-reporter@v1
+  if: always()
+  with:
+    name: Cascade Test Results
+    path: test-results.xml
+    reporter: java-junit
+```
 
 ### Environment Variables
 
@@ -201,16 +342,34 @@ dotenv -e .env.test npx cascade-test test/
 
 #### `package.json` Scripts
 
-Add scripts to your `package.json` for easy environment management e.g.:
+Add scripts to your `package.json` for easy environment management and different reporter configurations:
 
 ```json
 {
   "scripts": {
     "test": "dotenv npx cascade-test test/",
-    "test:ci": "NODE_ENV=test dotenv -e .env.ci npx cascade-test test/",
-    "test:dev": "NODE_ENV=development API_URL=http://localhost:3000 dotenv -e .env.dev npx cascade-test test/"
+    "test:ci": "NODE_ENV=test dotenv -e .env.ci npx cascade-test test/ --reporter=junit --output=test-results.xml --ci=auto",
+    "test:dev": "NODE_ENV=development API_URL=http://localhost:3000 dotenv -e .env.dev npx cascade-test test/",
+    "test:junit": "npx cascade-test test/ --reporter=junit --output=test-results.xml",
+    "test:tap": "npx cascade-test test/ --reporter=tap --output=test-results.tap",
+    "test:json": "npx cascade-test test/ --reporter=json --output=test-results.json"
   }
 }
+```
+
+#### Reporter Configuration via Environment Variables
+
+You can also configure reporters using environment variables:
+
+```bash
+# Set reporter via environment variable
+CASCADE_TEST_REPORTER=junit npx cascade-test test/
+
+# Set output file via environment variable  
+CASCADE_TEST_OUTPUT=my-results.xml npx cascade-test test/
+
+# Set CI environment
+CASCADE_TEST_CI=jenkins npx cascade-test test/
 ```
 
 ## Configuration
@@ -232,6 +391,42 @@ test({
 ## Examples
 
 Check `test/example.test.js`
+
+## Quick Reference
+
+### Common Commands
+
+```bash
+# Run tests with console output
+npx cascade-test test/
+
+# Generate JUnit XML for CI
+npx cascade-test test/ --reporter=junit --output=test-results.xml
+
+# Run with CI annotations
+npx cascade-test test/ --ci=auto
+
+# Use environment variables
+CASCADE_TEST_REPORTER=junit npx cascade-test test/
+```
+
+### Reporter Formats
+
+| Reporter | Output Format | Best For |
+|----------|---------------|----------|
+| `console` | Colored terminal output | Development, debugging |
+| `junit` | XML format | Jenkins, Azure DevOps, most CI systems |
+| `tap` | TAP format | Universal CI support, TAP consumers |
+| `json` | Structured JSON | Custom integrations, data processing |
+
+### CI Environment Variables
+
+| Environment Variable | Detected CI |
+|---------------------|-------------|
+| `JENKINS_URL` | Jenkins |
+| `AZURE_DEVOPS` or `TF_BUILD` | Azure DevOps |
+| `GITLAB_CI` | GitLab CI |
+| `GITHUB_ACTIONS` | GitHub Actions |
 
 ## License
 

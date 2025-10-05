@@ -12,8 +12,14 @@ import {
   TestFunction,
   SetupFunction,
   TeardownFunction,
-  SkipFunction
+  SkipFunction,
+  TestConfig,
+  TestReporter,
+  TestInfo,
+  TestResult,
+  InternalTestResult
 } from '../types';
+import { createReporter, detectCI, addCIAnnotations } from './reporters';
 
 // Internal types for test execution
 interface TestNode {
@@ -24,12 +30,8 @@ type TestPath = [string, TestFunction] | [string, TestPath[]];
 
 type TestDescription = [string] | [string, TestDescription[]];
 
-interface TestResult {
-  skipped: boolean | string;
-  error: string | null;
-}
 
-type TestContent = TestResult | TestDescription[];
+type TestContent = InternalTestResult | TestDescription[];
 type TestStructure = [string, TestContent];
 
 const DefaultAssertionTimeout = 5000;
@@ -80,7 +82,18 @@ function getCallerFile(): string | undefined {
   return callerfile;
 }
 
-const test: TestFunctionType = async (suite: TestSuite): Promise<void> => {
+const test: TestFunctionType = async (suite: TestSuite, config: TestConfig = {}): Promise<void> => {
+  // Read configuration from environment variables if not provided
+  const finalConfig: TestConfig = {
+    reporter: config.reporter || process.env.CASCADE_TEST_REPORTER as any || 'console',
+    outputFile: config.outputFile || process.env.CASCADE_TEST_OUTPUT || undefined,
+    ci: config.ci || (process.env.CASCADE_TEST_CI as any) || undefined
+  };
+  
+  // Initialize reporter and CI detection
+  const ci = finalConfig.ci || detectCI();
+  const reporter = createReporter(finalConfig.reporter || 'console', finalConfig.outputFile);
+  const testResults: TestResult[] = [];
   const extractFnPaths = (node: TestNode): TestPath[] =>
     Object.keys(node).reduce(
       (acc: TestPath[], key: string) => {
@@ -135,7 +148,7 @@ const test: TestFunctionType = async (suite: TestSuite): Promise<void> => {
     return Array.isArray(content);
   };
 
-  const isTestResult = (content: TestContent): content is TestResult => {
+  const isTestResult = (content: TestContent): content is InternalTestResult => {
     return !Array.isArray(content) && 'error' in content;
   };
 
@@ -176,9 +189,9 @@ ${printName(node[0], style)}${
             (node[1] as TestDescription[]).map((n: TestDescription) => indentString.concat(printStructure(n as TestStructure, style, indent + 2))),
             style,
           )
-        : (node[1] as TestResult).error !== null
-          ? indentString.concat(printFail((node[1] as TestResult).error!, style))
-          : (node[1] as TestResult).skipped
+        : (node[1] as InternalTestResult).error !== null
+          ? indentString.concat(printFail((node[1] as InternalTestResult).error!, style))
+          : (node[1] as InternalTestResult).skipped
             ? indentString.concat(printSkip(style))
             : indentString.concat(printPass(style))
     }`;
@@ -186,7 +199,7 @@ ${printName(node[0], style)}${
 
   const run = async (
     suite: TestSuite, 
-    { skippingReason, indent = 0, parentContext }: TestOptions = {}
+    { skippingReason, indent = 0, parentContext, currentPath = [] }: TestOptions & { currentPath?: string[] } = {}
   ): Promise<TestStructure[]> => {
     try {
       const { setup = noop, teardown = noop, skip = noop, ...rest } = suite;
@@ -226,24 +239,47 @@ ${printName(node[0], style)}${
         );
         const restElement = rest[key];
 
-        let singleResult: TestResult | TestDescription[];
+        let singleResult: InternalTestResult | TestDescription[];
         const timeouts: TimeoutConfig[] = [];
         try {
           if (R.is(Function, restElement)) {
+            const testStartTime = Date.now();
+            const testPath = [...currentPath, key];
+            
             if (skippingReason) {
               singleResult = {
                 skipped: skippingReason,
                 error: null,
               };
+              // Record skipped test
+              testResults.push({
+                name: key,
+                path: testPath,
+                passed: true, // Skipped tests are considered passed
+                duration: Date.now() - testStartTime
+              });
             } else {
               const assertionTimeout = timeout(setupResult?.timeout || DefaultAssertionTimeout);
               timeouts.push(assertionTimeout);
               const { cancel, promise: timeoutPromise } = assertionTimeout;
               const res = await Promise.race([(restElement as TestFunction)(setupResult), timeoutPromise]);
+              const testDuration = Date.now() - testStartTime;
+              const testError = R.defaultTo(null, res);
+              
               singleResult = {
                 skipped: false,
-                error: R.defaultTo(null, res),
+                error: testError,
               };
+              
+              // Record test result
+              testResults.push({
+                name: key,
+                path: testPath,
+                passed: !testError,
+                error: testError ? testError : undefined,
+                duration: testDuration
+              });
+              
               cancel();
             }
           } else {
@@ -253,7 +289,8 @@ ${printName(node[0], style)}${
             const nestedResults = await run(restElement as TestSuite, { 
               skippingReason, 
               indent: indent + 2, 
-              parentContext: setupResult 
+              parentContext: setupResult,
+              currentPath: [...currentPath, key]
             });
             singleResult = nestedResults as TestDescription[];
             cancel();
@@ -285,13 +322,20 @@ ${printName(node[0], style)}${
   try {
     const testFile = getCallerFile();
     console.log('Running test suite: \n'.cyan, testFile?.cyan || '');
-    const result = [testFile, await run(suite)] as TestStructure;
+    const result = [testFile, await run(suite, { currentPath: [testFile || 'unknown'] })] as TestStructure;
     console.log(printStructure(result));
     
     const failedTests = collectFailedTests(result);
     const exitCode = failedTests.length === 0 ? 0 : 1;
     
+    // Use reporter to generate output
+    reporter.onTestSuiteComplete(testResults, testFile || 'unknown');
+    const reporterOutput = reporter.generateOutput();
+    
     console.log(`\nTest suite finished ${exitCode === 0 ? 'successfully' : `with ${failedTests.length} errors`}`);
+    
+    // Add CI-specific annotations
+    addCIAnnotations(failedTests, ci);
     
     if (failedTests.length > 0) {
       console.log('\n' + '='.repeat(60).red);

@@ -15,8 +15,15 @@ interface TestResult {
   output?: string;
 }
 
-const runTest = (test: string): Promise<TestResult> => {
-  const child: ChildProcess = fork(test);
+const runTest = (test: string, config: { reporter?: string; outputFile?: string; ci?: string } = {}): Promise<TestResult> => {
+  const child: ChildProcess = fork(test, [], {
+    env: {
+      ...process.env,
+      CASCADE_TEST_REPORTER: config.reporter || 'console',
+      CASCADE_TEST_OUTPUT: config.outputFile || '',
+      CASCADE_TEST_CI: config.ci || 'auto'
+    }
+  });
   let output = '';
 
   return new Promise<TestResult>(function (resolve: (value: TestResult) => void, reject: (reason?: Error) => void) {
@@ -83,13 +90,13 @@ const parseFailedTests = (output: string): Array<{ path: string; error: string }
   return failedTests;
 };
 
-const main = async (testPath: string, regex: RegExp = /\.(js|ts)$/): Promise<void> => {
+const main = async (testPath: string, regex: RegExp = /\.(js|ts)$/, config: { reporter?: string; outputFile?: string; ci?: string } = {}): Promise<void> => {
   const testFiles = recursivelyFindByRegex(path.resolve(`${process.cwd()}/${testPath}`), regex);
 
   const exitStatuses: TestResult[] = [];
   for (const test of testFiles) {
     try {
-      const result = await runTest(test);
+      const result = await runTest(test, config);
       exitStatuses.push(result);
     } catch (e) {
       console.error(`${test} execution failed!`, e);
@@ -140,7 +147,7 @@ const cli = yargsFactory(hideBin(process.argv)) as Argv;
 
 cli
   .usage('Usage: $0 <path> [options]')
-  .command<{ path: string; regex?: string }>(
+  .command<{ path: string; regex?: string; reporter?: string; output?: string; ci?: string }>(
     '$0 <path>',
     'Runs tests in path filtered by regex if given',
     (y: Argv<{}>) =>
@@ -154,9 +161,30 @@ cli
           description: 'Regex to filter files with',
           alias: 'r',
           type: 'string',
+        })
+        .option('reporter', {
+          description: 'Test reporter to use',
+          type: 'string',
+          choices: ['console', 'junit', 'tap', 'json'],
+          default: 'console',
+        })
+        .option('output', {
+          description: 'Output file for structured reporters',
+          alias: 'o',
+          type: 'string',
+        })
+        .option('ci', {
+          description: 'CI environment for annotations',
+          type: 'string',
+          choices: ['jenkins', 'azure', 'gitlab', 'github', 'console', 'auto'],
+          default: 'auto',
         }),
-    async (argv: ArgumentsCamelCase<{ path: string; regex?: string }>) => {
-      return await main(argv.path, argv.regex ? new RegExp(argv.regex) : /\.(js|ts)$/);
+    async (argv: ArgumentsCamelCase<{ path: string; regex?: string; reporter?: string; output?: string; ci?: string }>) => {
+      return await main(argv.path, argv.regex ? new RegExp(argv.regex) : /\.(js|ts)$/, {
+        reporter: argv.reporter as any,
+        outputFile: argv.output,
+        ci: argv.ci === 'auto' ? undefined : argv.ci as any
+      });
     },
   )
   .help()
