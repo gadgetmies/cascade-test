@@ -30,9 +30,9 @@ jobs:
         run: npm run build
 
       - name: Run tests (junit)
-        run: node dist/bin/run-tests.js dist/test --reporter=junit --output=test-results.xml --ci=github
+        run: node dist/bin/run-tests.js dist/test/examples --reporter=junit --output=test-results.xml --ci=github
       - name: Upload JUnit XML artifact
-        if: !cancelled()
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: junit-xml-results
@@ -47,5 +47,6 @@ jobs:
           name: Cascade Test Results (JUnit)
           path: test-results.xml
           reporter: java-junit
+          fail-on-error: false
 
 

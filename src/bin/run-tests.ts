@@ -7,22 +7,13 @@ import type { Argv, ArgumentsCamelCase } from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import * as path from 'path';
 import * as fs from 'fs';
-import { TestResult as TestRunResult } from '../types.js';
+import { TestSummary } from '../types.js';
 import 'colors';
 
 interface TestResult {
   test: string;
   code: number;
   output?: string;
-}
-
-interface TestSummary {
-  total: number;
-  passed: number;
-  failed: number;
-  skipped: number;
-  failedTests: Array<{ path: string[]; error: string }>;
-  results: TestRunResult[];
 }
 
 const runTest = (test: string, config: { reporter?: string; outputFile?: string; ci?: string } = {}): Promise<TestResult> => {

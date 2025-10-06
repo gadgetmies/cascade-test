@@ -1,0 +1,36 @@
+name: Framework Integration Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  framework-tests:
+    name: Framework Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Run framework integration tests
+        run: npm run test
+
+      - name: Verify test outputs
+        if: success()
+        run: |
+          echo "✅ Framework integration tests passed successfully!"
+          echo "All reporters have been validated."
+

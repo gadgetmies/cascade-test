@@ -26,7 +26,7 @@ jobs:
         run: npm run build
 
       - name: Run tests (tap)
-        run: node dist/bin/run-tests.js dist/test --reporter=tap --output=test-results.tap --ci=github || true
+        run: node dist/bin/run-tests.js dist/test/examples --reporter=tap --output=test-results.tap --ci=github || true
 
       - name: Upload TAP artifact
         if: always()
@@ -55,7 +55,7 @@ jobs:
         run: npm run build
 
       - name: Run tests (json)
-        run: node dist/bin/run-tests.js dist/test --reporter=json --output=test-results.json --ci=github || true
+        run: node dist/bin/run-tests.js dist/test/examples --reporter=json --output=test-results.json --ci=github || true
 
       - name: Upload JSON artifact
         if: always()
@@ -84,7 +84,7 @@ jobs:
         run: npm run build
 
       - name: Run tests (console)
-        run: node dist/bin/run-tests.js dist/test --reporter=console --ci=github 2>&1 | tee console-output.txt; test ${PIPESTATUS[0]} -eq 0 || true
+        run: node dist/bin/run-tests.js dist/test/examples --reporter=console --ci=github 2>&1 | tee console-output.txt; test ${PIPESTATUS[0]} -eq 0 || true
 
       - name: Upload console output
         if: always()

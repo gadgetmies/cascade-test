@@ -1,0 +1,83 @@
+{
+  "testFile": "file:///Users/gadgetmies/Documents/Projects/Code/cascade-test/dist/test/examples/example.test.js",
+  "summary": {
+    "total": 7,
+    "passed": 4,
+    "failed": 1,
+    "duration": 101
+  },
+  "results": [
+    {
+      "name": "Basic Tests should pass simple assertion",
+      "path": [
+        "file:///Users/gadgetmies/Documents/Projects/Code/cascade-test/dist/test/examples/example.test.js",
+        "Basic Tests",
+        "should pass simple assertion"
+      ],
+      "status": "passed",
+      "duration": 0
+    },
+    {
+      "name": "Basic Tests should handle async operations",
+      "path": [
+        "file:///Users/gadgetmies/Documents/Projects/Code/cascade-test/dist/test/examples/example.test.js",
+        "Basic Tests",
+        "should handle async operations"
+      ],
+      "status": "passed",
+      "duration": 101
+    },
+    {
+      "name": "Error Handling should fail with custom error",
+      "path": [
+        "file:///Users/gadgetmies/Documents/Projects/Code/cascade-test/dist/test/examples/example.test.js",
+        "Error Handling",
+        "should fail with custom error"
+      ],
+      "status": "failed",
+      "error": "This test intentionally fails",
+      "duration": 0
+    },
+    {
+      "name": "Error Handling should pass when no error returned",
+      "path": [
+        "file:///Users/gadgetmies/Documents/Projects/Code/cascade-test/dist/test/examples/example.test.js",
+        "Error Handling",
+        "should pass when no error returned"
+      ],
+      "status": "passed",
+      "duration": 0
+    },
+    {
+      "name": "Nested Suites should access nested context",
+      "path": [
+        "file:///Users/gadgetmies/Documents/Projects/Code/cascade-test/dist/test/examples/example.test.js",
+        "Nested Suites",
+        "should access nested context"
+      ],
+      "status": "passed",
+      "duration": 0
+    },
+    {
+      "name": "Skip Examples should be skipped",
+      "path": [
+        "file:///Users/gadgetmies/Documents/Projects/Code/cascade-test/dist/test/examples/example.test.js",
+        "Skip Examples",
+        "should be skipped"
+      ],
+      "status": "skipped",
+      "duration": 0
+    },
+    {
+      "name": "Skip Examples Skipped Expired Skip expired skip should be skipped because of the skip at the higher level",
+      "path": [
+        "file:///Users/gadgetmies/Documents/Projects/Code/cascade-test/dist/test/examples/example.test.js",
+        "Skip Examples",
+        "Skipped Expired Skip",
+        "expired skip should be skipped because of the skip at the higher level"
+      ],
+      "status": "skipped",
+      "duration": 0
+    }
+  ]
+}

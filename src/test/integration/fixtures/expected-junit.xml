@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="example.test.js" tests="7" failures="1" errors="0" skipped="2" time="0.101">
+    <testcase name="Basic Tests.should pass simple assertion" classname="example.test" time="0"/>
+    <testcase name="Basic Tests.should handle async operations" classname="example.test" time="0.101"/>
+    <testcase name="Error Handling.should fail with custom error" classname="example.test" time="0">
+      <failure message="This test intentionally fails"/>
+    </testcase>
+    <testcase name="Error Handling.should pass when no error returned" classname="example.test" time="0"/>
+    <testcase name="Nested Suites.should access nested context" classname="example.test" time="0"/>
+    <testcase name="Skip Examples.should be skipped" classname="example.test" time="0">
+      <skipped message="Test skipped"/>
+    </testcase>
+    <testcase name="Skip Examples.Skipped Expired Skip.expired skip should be skipped because of the skip at the higher level" classname="example.test" time="0">
+      <skipped message="Test skipped"/>
+    </testcase>
+</testsuite>

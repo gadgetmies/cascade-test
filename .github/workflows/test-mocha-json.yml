@@ -30,10 +30,10 @@ jobs:
         run: npm run build
 
       - name: Run tests (mocha-json)
-        run: node dist/bin/run-tests.js dist/test --reporter=mocha-json --output=mocha-results.json --ci=github
+        run: node dist/bin/run-tests.js dist/test/examples --reporter=mocha-json --output=mocha-results.json --ci=github
 
       - name: Upload Mocha JSON artifact
-        if: !cancelled()
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: mocha-json-results
@@ -49,5 +49,6 @@ jobs:
           path: mocha-results.json
           reporter: mocha-json
           use-job-summary: true
+          fail-on-error: false
 
 

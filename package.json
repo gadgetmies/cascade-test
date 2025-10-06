@@ -13,8 +13,9 @@
     "build:watch": "tsc --watch",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run clean && npm run build",
-    "test": "npm run build && node dist/bin/run-tests.js dist/test",
-    "test:dev": "npm run clean &&npm run build && node dist/bin/run-tests.js dist/test"
+    "test": "npm run build && node dist/bin/run-tests.js dist/test/integration",
+    "test:dev": "npm run clean && npm run build && node dist/bin/run-tests.js dist/test/integration",
+    "test:examples": "npm run build && node dist/bin/run-tests.js dist/test/examples"
   },
   "keywords": [
     "test",

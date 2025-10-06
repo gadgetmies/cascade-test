@@ -25,3 +25,13 @@ dist/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Test outputs
+.cascade-test-results.json
+test-*.xml
+test-*.tap
+test-*.json
+*-results.xml
+*-results.tap
+*-results.json
+console-output.txt

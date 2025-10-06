@@ -1,0 +1,136 @@
+{
+  "stats": {
+    "suites": 1,
+    "tests": 7,
+    "passes": 4,
+    "pending": 2,
+    "failures": 1,
+    "start": "2025-10-06T15:21:20.571Z",
+    "end": "2025-10-06T15:21:20.571Z",
+    "duration": 101
+  },
+  "tests": [
+    {
+      "title": "should pass simple assertion",
+      "fullTitle": "Basic Tests should pass simple assertion",
+      "file": "file:///Users/gadgetmies/Documents/Projects/Code/cascade-test/dist/test/examples/example.test.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should handle async operations",
+      "fullTitle": "Basic Tests should handle async operations",
+      "file": "file:///Users/gadgetmies/Documents/Projects/Code/cascade-test/dist/test/examples/example.test.js",
+      "duration": 101,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should fail with custom error",
+      "fullTitle": "Error Handling should fail with custom error",
+      "file": "file:///Users/gadgetmies/Documents/Projects/Code/cascade-test/dist/test/examples/example.test.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {
+        "message": "This test intentionally fails"
+      }
+    },
+    {
+      "title": "should pass when no error returned",
+      "fullTitle": "Error Handling should pass when no error returned",
+      "file": "file:///Users/gadgetmies/Documents/Projects/Code/cascade-test/dist/test/examples/example.test.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should access nested context",
+      "fullTitle": "Nested Suites should access nested context",
+      "file": "file:///Users/gadgetmies/Documents/Projects/Code/cascade-test/dist/test/examples/example.test.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should be skipped",
+      "fullTitle": "Skip Examples should be skipped",
+      "file": "file:///Users/gadgetmies/Documents/Projects/Code/cascade-test/dist/test/examples/example.test.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "expired skip should be skipped because of the skip at the higher level",
+      "fullTitle": "Skip Examples Skipped Expired Skip expired skip should be skipped because of the skip at the higher level",
+      "file": "file:///Users/gadgetmies/Documents/Projects/Code/cascade-test/dist/test/examples/example.test.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    }
+  ],
+  "pending": [
+    {
+      "title": "should be skipped",
+      "fullTitle": "Skip Examples should be skipped",
+      "file": "file:///Users/gadgetmies/Documents/Projects/Code/cascade-test/dist/test/examples/example.test.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "expired skip should be skipped because of the skip at the higher level",
+      "fullTitle": "Skip Examples Skipped Expired Skip expired skip should be skipped because of the skip at the higher level",
+      "file": "file:///Users/gadgetmies/Documents/Projects/Code/cascade-test/dist/test/examples/example.test.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    }
+  ],
+  "failures": [
+    {
+      "title": "should fail with custom error",
+      "fullTitle": "Error Handling should fail with custom error",
+      "file": "file:///Users/gadgetmies/Documents/Projects/Code/cascade-test/dist/test/examples/example.test.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {
+        "message": "This test intentionally fails"
+      }
+    }
+  ],
+  "passes": [
+    {
+      "title": "should pass simple assertion",
+      "fullTitle": "Basic Tests should pass simple assertion",
+      "file": "file:///Users/gadgetmies/Documents/Projects/Code/cascade-test/dist/test/examples/example.test.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should handle async operations",
+      "fullTitle": "Basic Tests should handle async operations",
+      "file": "file:///Users/gadgetmies/Documents/Projects/Code/cascade-test/dist/test/examples/example.test.js",
+      "duration": 101,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should pass when no error returned",
+      "fullTitle": "Error Handling should pass when no error returned",
+      "file": "file:///Users/gadgetmies/Documents/Projects/Code/cascade-test/dist/test/examples/example.test.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "should access nested context",
+      "fullTitle": "Nested Suites should access nested context",
+      "file": "file:///Users/gadgetmies/Documents/Projects/Code/cascade-test/dist/test/examples/example.test.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {}
+    }
+  ]
+}

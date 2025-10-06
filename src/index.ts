@@ -28,6 +28,7 @@ export type {
   TestReporter,
   TestInfo,
   TestResult,
+  TestSummary,
   CIEnvironment,
   TestReporterType
 } from './types.js';

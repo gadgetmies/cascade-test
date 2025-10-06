@@ -51,6 +51,15 @@ export interface TestResult {
   duration: number;
 }
 
+export interface TestSummary {
+  total: number;
+  passed: number;
+  failed: number;
+  skipped: number;
+  failedTests: Array<{ path: string[]; error: string }>;
+  results: TestResult[];
+}
+
 export interface TestReporter {
   onTestStart(test: TestInfo): void;
   onTestResult(result: TestResult): void;

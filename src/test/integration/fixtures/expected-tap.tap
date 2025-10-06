@@ -1,0 +1,18 @@
+TAP version 13
+1..7
+ok 1 - Basic Tests should pass simple assertion
+ok 2 - Basic Tests should handle async operations
+not ok 3 - Error Handling should fail with custom error
+  ---
+  message: This test intentionally fails
+  ---
+ok 4 - Error Handling should pass when no error returned
+ok 5 - Nested Suites should access nested context
+not ok 6 - Skip Examples should be skipped
+  ---
+  message: Test failed
+  ---
+not ok 7 - Skip Examples Skipped Expired Skip expired skip should be skipped because of the skip at the higher level
+  ---
+  message: Test failed
+  ---
