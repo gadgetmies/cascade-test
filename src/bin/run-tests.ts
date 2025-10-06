@@ -15,6 +15,22 @@ interface TestResult {
   output?: string;
 }
 
+interface TestSummary {
+  total: number;
+  passed: number;
+  failed: number;
+  skipped: number;
+  failedTests: Array<{ path: string[]; error: string }>;
+  results: Array<{
+    name: string;
+    path: string[];
+    passed: boolean;
+    skipped?: boolean;
+    error?: string;
+    duration: number;
+  }>;
+}
+
 const runTest = (test: string, config: { reporter?: string; outputFile?: string; ci?: string } = {}): Promise<TestResult> => {
   const child: ChildProcess = fork(test, [], {
     env: {
@@ -94,52 +110,70 @@ const main = async (testPath: string, regex: RegExp = /\.(js|ts)$/, config: { re
   const testFiles = recursivelyFindByRegex(path.resolve(`${process.cwd()}/${testPath}`), regex);
 
   const exitStatuses: TestResult[] = [];
+  const allTestSummaries: TestSummary[] = [];
+  
   for (const test of testFiles) {
     try {
       const result = await runTest(test, config);
       exitStatuses.push(result);
+      
+      // Try to read test summary from temporary file
+      const tempFile = path.join(process.cwd(), '.cascade-test-results.json');
+      try {
+        if (fs.existsSync(tempFile)) {
+          const testSummary = JSON.parse(fs.readFileSync(tempFile, 'utf8')) as TestSummary;
+          allTestSummaries.push(testSummary);
+          // Clean up the temporary file
+          fs.unlinkSync(tempFile);
+        }
+      } catch (e) {
+        // Ignore file read errors
+      }
     } catch (e) {
       console.error(`${test} execution failed!`, e);
       exitStatuses.push({ test, code: -1 });
     }
   }
 
+  // Calculate overall statistics
+  const totalTests = allTestSummaries.reduce((sum, summary) => sum + summary.total, 0);
+  const totalPassed = allTestSummaries.reduce((sum, summary) => sum + summary.passed, 0);
+  const totalFailed = allTestSummaries.reduce((sum, summary) => sum + summary.failed, 0);
+  const totalSkipped = allTestSummaries.reduce((sum, summary) => sum + summary.skipped, 0);
+  const allFailedTests = allTestSummaries.flatMap(summary => summary.failedTests);
+
   const failedTests = R.reject(R.propEq(0, 'code'), exitStatuses);
+  
   if (failedTests.length !== 0) {
     console.log('\n' + '='.repeat(60).red);
     console.log('FAILED TESTS'.red.bold);
     console.log('='.repeat(60).red);
     
-    for (const { test, output } of failedTests) {
-      // Try to read failed test information from temporary file
-      const tempFile = path.join(process.cwd(), '.cascade-test-failures.json');
-      try {
-        if (fs.existsSync(tempFile)) {
-          const failedTestData = JSON.parse(fs.readFileSync(tempFile, 'utf8'));
-          for (const failedTest of failedTestData) {
-            console.log(`\n• ${failedTest.path.join(' → ')}`.red);
-            console.log(`  Error: ${failedTest.error}`.yellow);
-          }
-          // Clean up the temporary file
-          fs.unlinkSync(tempFile);
-        }
-      } catch (e) {
-        // Fall back to parsing output if file reading fails
-        if (output) {
-          const parsedFailedTests = parseFailedTests(output);
-          for (const failedTest of parsedFailedTests) {
-            console.log(`\n• ${failedTest.path}`.red);
-            console.log(`  Error: ${failedTest.error}`.yellow);
-          }
-        }
-      }
+    for (const failedTest of allFailedTests) {
+      console.log(`\n• ${failedTest.path.join(' → ')}`.red);
+      console.log(`  Error: ${failedTest.error}`.yellow);
     }
     
     console.log('\n' + '='.repeat(60).red);
+    
+    // Display summary
+    console.log(`\nTest Summary:`.bold);
+    console.log(`  Total: ${totalTests}`);
+    console.log(`  Passed: ${totalPassed}`.green);
+    console.log(`  Failed: ${totalFailed}`.red);
+    console.log(`  Skipped: ${totalSkipped}`.yellow);
+    
     process.exit(1);
   }
 
-  console.log('All tests passed!'.green);
+  // Display success summary
+  console.log(`\nTest Summary:`.bold);
+  console.log(`  Total: ${totalTests}`);
+  console.log(`  Passed: ${totalPassed}`.green);
+  console.log(`  Failed: ${totalFailed}`.red);
+  console.log(`  Skipped: ${totalSkipped}`.yellow);
+  
+  console.log('\nAll tests passed!'.green);
   process.exit(0);
 };
 

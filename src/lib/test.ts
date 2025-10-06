@@ -273,6 +273,7 @@ ${printName(node[0], style)}${
                 name: key,
                 path: testPath,
                 passed: true, // Skipped tests are considered passed
+                skipped: true,
                 duration: Date.now() - testStartTime
               });
             } else {
@@ -354,6 +355,22 @@ ${printName(node[0], style)}${
     // Add CI-specific annotations
     addCIAnnotations(failedTests, ci);
     
+    // Write comprehensive test results to a temporary file for CLI consumption
+    const tempFile = path.join(process.cwd(), '.cascade-test-results.json');
+    try {
+      const testSummary = {
+        total: testResults.length,
+        passed: testResults.filter(r => r.passed && !r.skipped).length,
+        failed: testResults.filter(r => !r.passed).length,
+        skipped: testResults.filter(r => r.skipped).length,
+        failedTests: failedTests,
+        results: testResults
+      };
+      fs.writeFileSync(tempFile, JSON.stringify(testSummary, null, 2));
+    } catch (e) {
+      // Ignore file write errors
+    }
+    
     if (failedTests.length > 0) {
       console.log('\n' + '='.repeat(60).red);
       console.log(`${testFile}`.red.bold);
@@ -366,14 +383,6 @@ ${printName(node[0], style)}${
       });
       
       console.log('\n' + '='.repeat(60).red);
-      
-      // Write failed test information to a temporary file for CLI consumption
-      const tempFile = path.join(process.cwd(), '.cascade-test-failures.json');
-      try {
-        fs.writeFileSync(tempFile, JSON.stringify(failedTests, null, 2));
-      } catch (e) {
-        // Ignore file write errors
-      }
     }
     
     // Don't exit immediately - let the process exit naturally

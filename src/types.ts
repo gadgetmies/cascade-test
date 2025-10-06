@@ -45,6 +45,7 @@ export interface TestResult {
   name: string;
   path: string[];
   passed: boolean;
+  skipped?: boolean;
   error?: string;
   duration: number;
 }
