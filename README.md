@@ -107,7 +107,7 @@ test({
     // Skip all tests in this suite until a specific date
     return {
       reason: 'Feature not implemented yet',
-      until: new Date('2024-12-31') // Skip until end of year
+      until: '2025-12-31' // Skip until end of year
     }
   },
 
@@ -120,7 +120,7 @@ test({
       // Skip conditionally with expiration
       return process.env.NODE_ENV === 'production' ? {
         reason: 'Skipping in production',
-        until: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
+        until: '2025-12-31' // Skip until end of year
       } : null
     },
 
@@ -134,7 +134,7 @@ test({
       // This will cause the test to FAIL because the skip date is in the past
       return {
         reason: 'This skip has expired',
-        until: new Date(Date.now() - 24 * 60 * 60 * 1000) // 1 day ago
+        until: '2024-01-01' // Skip expired in the past
       }
     },
 

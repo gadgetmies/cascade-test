@@ -63,7 +63,7 @@ test({
       // This test will be skipped until a future date
       return {
         reason: 'Feature not implemented yet',
-        until: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
+        until: '2025-12-31' // Skip until end of year
       };
     },
 
@@ -75,7 +75,7 @@ test({
       skip: () => {
         return {
           reason: 'Test nested expired skip',
-          until: new Date(Date.now() - 24 * 60 * 60 * 1000) // 1 day ago
+          until: '2024-01-01' // Skip expired in the past
         };
       },
 
@@ -90,7 +90,7 @@ test({
       // This test will fail because the skip date is in the past
       return {
         reason: 'This skip has expired',
-        until: new Date(Date.now() - 24 * 60 * 60 * 1000) // 1 day ago
+        until: '2024-01-01' // Skip expired in the past
       };
     },
 

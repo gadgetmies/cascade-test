@@ -240,11 +240,12 @@ ${printName(node[0], style)}${
           if (skipDate > now) {
             skippingReason = skipConfig.reason;
           } else {
+            const skipDateString = typeof skipConfig.until === 'string' ? skipConfig.until : skipDate.toISOString();
             return [[
               'skip-expired',
               {
                 skipped: false,
-                error: `Test skip expired on ${skipDate.toISOString()}. Reason: ${skipConfig.reason}`,
+                error: `Test skip expired on ${skipDateString}. Reason: ${skipConfig.reason}`,
               }
             ] as TestStructure];
           }

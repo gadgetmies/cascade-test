@@ -45,12 +45,12 @@ test({
 
     "should normalize data before comparison": () => {
       const testData = {
-        timestamp: new Date().toISOString(),
+        timestamp: "2025-10-01T12:00:00.000Z",
         id: "unique-id-123",
         duration: 1500,
         user: {
           name: "John Doe",
-          createdAt: new Date().toISOString(),
+          createdAt: "2025-10-01T12:00:00.000Z",
         },
       };
 
@@ -74,7 +74,7 @@ test({
         metadata: {
           total: 3,
           average: 91.33,
-          generated: new Date().toISOString(),
+          generated: "2025-10-01T12:00:00.000Z",
         },
       };
 

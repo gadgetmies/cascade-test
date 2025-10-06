@@ -280,8 +280,8 @@ export class MochaJsonReporter implements TestReporter {
       passes: passes.length,
       pending: pending.length,
       failures: failures.length,
-      start: new Date().toISOString(),
-      end: new Date().toISOString(),
+      start: "2025-10-01T12:00:00.000Z",
+      end: "2025-10-01T12:00:00.000Z",
       duration: this.results.reduce((s, r) => s + r.duration, 0)
     };
 

@@ -37,7 +37,7 @@ import { assertFixture } from './lib/fixture-utils.js';
 
 test('should update fixture when needed', async () => {
   const testData = {
-    timestamp: new Date().toISOString(),
+    timestamp: "2025-10-01T12:00:00.000Z",
     id: Math.random().toString(36)
   };
 
@@ -62,12 +62,12 @@ import { assertFixture, normalizeConfig } from './lib/fixture-utils.js';
 
 test('should normalize dynamic data', async () => {
   const testData = {
-    timestamp: new Date().toISOString(),
+    timestamp: "2025-10-01T12:00:00.000Z",
     id: 'unique-id-123',
     duration: 1500,
     user: {
       name: 'John Doe',
-      createdAt: new Date().toISOString()
+      createdAt: "2025-10-01T12:00:00.000Z"
     }
   };
 
