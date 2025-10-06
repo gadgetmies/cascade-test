@@ -243,9 +243,9 @@ export class MochaJsonReporter implements TestReporter {
       err: r.passed || r.skipped ? {} : { message: r.error || 'Test failed' }
     }));
 
-    const passes = tests.filter((_, i) => this.results[i].passed && !this.results[i].skipped);
-    const failures = tests.filter((_, i) => !this.results[i].passed);
+    const passes = tests.filter((_, i) => this.results[i].passed);
     const pending = tests.filter((_, i) => !!this.results[i].skipped);
+    const failures = tests.filter((_, i) => !this.results[i].passed && !this.results[i].skipped);
 
     const stats = {
       suites: 1,

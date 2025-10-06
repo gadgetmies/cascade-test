@@ -272,7 +272,7 @@ ${printName(node[0], style)}${
               testResults.push({
                 name: key,
                 path: testPath,
-                passed: true, // Skipped tests are considered passed
+                passed: false,
                 skipped: true,
                 duration: Date.now() - testStartTime
               });

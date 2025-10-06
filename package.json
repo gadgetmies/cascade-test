@@ -14,7 +14,7 @@
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run clean && npm run build",
     "test": "npm run build && node dist/bin/run-tests.js dist/test",
-    "test:dev": "npm run build && node dist/bin/run-tests.js dist/test"
+    "test:dev": "npm run clean &&npm run build && node dist/bin/run-tests.js dist/test"
   },
   "keywords": [
     "test",
