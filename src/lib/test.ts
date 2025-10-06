@@ -356,7 +356,7 @@ ${printName(node[0], style)}${
     
     if (failedTests.length > 0) {
       console.log('\n' + '='.repeat(60).red);
-      console.log(`FAILED TESTS: ${testFile}`.red.bold);
+      console.log(`${testFile}`.red.bold);
       console.log('='.repeat(60).red);
       
       failedTests.forEach((failedTest) => {

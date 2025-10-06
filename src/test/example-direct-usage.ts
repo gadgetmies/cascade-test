@@ -1,6 +1,6 @@
 // Example of using the test framework directly
-import { test } from './index.js';
-import { TestContext } from './types.js';
+import { test } from '../index.js';
+import { TestContext } from '../types.js';
 
 test({
   setup: async (): Promise<TestContext> => {

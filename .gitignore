@@ -7,6 +7,9 @@ yarn-error.log*
 # Yarn Integrity file
 .yarn-integrity
 
+# Build output
+dist/
+
 # dotenv environment variables file
 .env
 
