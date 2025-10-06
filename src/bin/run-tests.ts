@@ -199,7 +199,7 @@ cli
         .option('reporter', {
           description: 'Test reporter to use',
           type: 'string',
-          choices: ['console', 'junit', 'tap', 'json'],
+          choices: ['console', 'junit', 'tap', 'json', 'mocha-json'],
           default: 'console',
         })
         .option('output', {

@@ -214,6 +214,63 @@ export class JSONReporter implements TestReporter {
 }
 
 /**
+ * Mocha-compatible JSON reporter (mocha-json schema)
+ */
+export class MochaJsonReporter implements TestReporter {
+  private results: TestResult[] = [];
+  private testFile: string = '';
+
+  onTestStart(test: TestInfo): void {}
+
+  onTestResult(result: TestResult): void {
+    this.results.push(result);
+  }
+
+  onTestSuiteComplete(results: TestResult[], testFile: string): void {
+    this.results = results;
+    this.testFile = testFile;
+  }
+
+  generateOutput(): string {
+    // Build a minimal mocha-json compatible structure
+    // See https://github.com/dorny/test-reporter#supported-reporters
+    const tests = this.results.map(r => ({
+      title: r.path.slice(-1)[0],
+      fullTitle: r.path.slice(1).join(' '),
+      file: this.testFile,
+      duration: r.duration,
+      currentRetry: 0,
+      err: r.passed || r.skipped ? {} : { message: r.error || 'Test failed' }
+    }));
+
+    const passes = tests.filter((_, i) => this.results[i].passed && !this.results[i].skipped);
+    const failures = tests.filter((_, i) => !this.results[i].passed);
+    const pending = tests.filter((_, i) => !!this.results[i].skipped);
+
+    const stats = {
+      suites: 1,
+      tests: this.results.length,
+      passes: passes.length,
+      pending: pending.length,
+      failures: failures.length,
+      start: new Date().toISOString(),
+      end: new Date().toISOString(),
+      duration: this.results.reduce((s, r) => s + r.duration, 0)
+    };
+
+    const payload = {
+      stats,
+      tests,
+      pending,
+      failures,
+      passes
+    };
+
+    return JSON.stringify(payload, null, 2);
+  }
+}
+
+/**
  * Create a reporter instance
  */
 export const createReporter = (type: string, outputFile?: string): TestReporter => {
@@ -228,6 +285,9 @@ export const createReporter = (type: string, outputFile?: string): TestReporter 
       break;
     case 'json':
       reporter = new JSONReporter();
+      break;
+    case 'mocha-json':
+      reporter = new MochaJsonReporter();
       break;
     case 'console':
     default:

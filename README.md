@@ -1,5 +1,13 @@
 # Cascade Test
 
+## Reporter Status
+
+[![Console](https://github.com/gadgetmies/cascade-test/actions/workflows/test-console.yml/badge.svg?branch=main)](https://github.com/gadgetmies/cascade-test/actions/workflows/test-console.yml)
+[![JUnit](https://github.com/gadgetmies/cascade-test/actions/workflows/test-junit.yml/badge.svg?branch=main)](https://github.com/gadgetmies/cascade-test/actions/workflows/test-junit.yml)
+[![TAP](https://github.com/gadgetmies/cascade-test/actions/workflows/test-tap.yml/badge.svg?branch=main)](https://github.com/gadgetmies/cascade-test/actions/workflows/test-tap.yml)
+[![JSON](https://github.com/gadgetmies/cascade-test/actions/workflows/test-json.yml/badge.svg?branch=main)](https://github.com/gadgetmies/cascade-test/actions/workflows/test-json.yml)
+[![Mocha JSON](https://github.com/gadgetmies/cascade-test/actions/workflows/test-mocha-json.yml/badge.svg?branch=main)](https://github.com/gadgetmies/cascade-test/actions/workflows/test-mocha-json.yml)
+
 A test framework where context cascades through your test hierarchy. Plain JavaScript objects with automatic context passing.
 
 ## Features

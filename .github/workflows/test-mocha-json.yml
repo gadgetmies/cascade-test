@@ -1,0 +1,45 @@
+name: Test (mocha-json)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Run tests (mocha-json)
+        run: node dist/bin/run-tests.js dist/test --reporter=mocha-json --output=mocha-results.json --ci=github
+
+      # Run regardless of previous step results, but skip on forked PRs (no permissions to publish checks)
+      - name: Publish Mocha JSON test results
+        if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+        uses: dorny/test-reporter@v1
+        with:
+          name: Mocha JSON Results
+          path: mocha-results.json
+          reporter: mocha-json
+          fail-on-error: true
+
+

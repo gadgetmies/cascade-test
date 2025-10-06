@@ -27,7 +27,7 @@ export interface TestSuite {
 
 export type CIEnvironment = 'jenkins' | 'azure' | 'gitlab' | 'github' | 'console';
 
-export type TestReporterType = 'console' | 'junit' | 'tap' | 'json';
+export type TestReporterType = 'console' | 'junit' | 'tap' | 'json' | 'mocha-json';
 
 export interface TestConfig {
   reporter?: TestReporterType;
