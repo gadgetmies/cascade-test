@@ -71,18 +71,31 @@ test({
       return 'This test should be skipped';
     },
 
-    'Expired Skip': {
+    'Skipped Expired Skip': {
       skip: () => {
-        // This test will fail because the skip date is in the past
         return {
-          reason: 'This skip has expired',
+          reason: 'Test nested expired skip',
           until: new Date(Date.now() - 24 * 60 * 60 * 1000) // 1 day ago
         };
       },
 
-      'should fail due to expired skip': (): string | null => {
-        return 'This test should fail due to expired skip';
+      'expired skip should be skipped because of the skip at the higher level': (): string | null => {
+        return 'This should be skipped because of the skip at the higher level';
       }
+    }
+  },
+
+  'Expired Skip': {
+    skip: () => {
+      // This test will fail because the skip date is in the past
+      return {
+        reason: 'This skip has expired',
+        until: new Date(Date.now() - 24 * 60 * 60 * 1000) // 1 day ago
+      };
+    },
+
+    'should fail due to expired skip': (): string | null => {
+      return 'This test should fail due to expired skip';
     }
   }
 });

@@ -205,7 +205,8 @@ ${printName(node[0], style)}${
     try {
       const { setup = noop, teardown = noop, skip = noop, ...rest } = suite;
 
-      if (skip !== noop) {
+      // Only evaluate this suite's skip if no ancestor has already marked it as skipped
+      if (!skippingReason && skip !== noop) {
         const skipResult = skip();
         if (skipResult && typeof skipResult === 'object' && 'reason' in skipResult && 'until' in skipResult) {
           const skipConfig = skipResult as SkipConfig;
