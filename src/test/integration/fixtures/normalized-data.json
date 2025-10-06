@@ -1,0 +1,9 @@
+{
+  "timestamp": "[TIMESTAMP]",
+  "id": "[ID]",
+  "duration": "[DURATION]",
+  "user": {
+    "name": "John Doe",
+    "createdAt": "[TIMESTAMP]"
+  }
+}

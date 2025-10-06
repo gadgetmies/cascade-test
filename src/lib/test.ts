@@ -83,6 +83,30 @@ function getCallerFile(): string | undefined {
   return callerfile;
 }
 
+/**
+ * Clean up test file path for display - make it relative and drop file extension
+ */
+function getDisplayTestFile(testFile: string): string {
+  try {
+    // Handle file:// URLs by extracting the actual file path
+    let actualPath = testFile;
+    if (testFile.startsWith('file://')) {
+      actualPath = testFile.replace('file://', '');
+    }
+    
+    // Get relative path from current working directory
+    const relativePath = path.relative(process.cwd(), actualPath);
+    
+    // Drop the file extension
+    const pathWithoutExt = path.join(path.dirname(relativePath), path.basename(relativePath, path.extname(relativePath)));
+    
+    return pathWithoutExt;
+  } catch {
+    // If conversion fails, return the original path
+    return testFile;
+  }
+}
+
 const test: TestFunctionType = async (suite: TestSuite, config: TestConfig = {}): Promise<void> => {
   // Read configuration from environment variables if not provided
   const finalConfig: TestConfig = {
@@ -339,16 +363,22 @@ ${printName(node[0], style)}${
 
   try {
     const testFile = getCallerFile();
-    console.log('Running test suite: \n'.cyan, testFile?.cyan || '');
-    const result = [testFile, await run(suite, { currentPath: [testFile || 'unknown'] })] as TestStructure;
+    const displayTestFile = getDisplayTestFile(testFile || 'unknown');
+    console.log('Running test suite: \n'.cyan, displayTestFile.cyan);
+    const result = [displayTestFile, await run(suite, { currentPath: [testFile || 'unknown'] })] as TestStructure;
     console.log(printStructure(result));
     
     const failedTests = collectFailedTests(result);
     const exitCode = failedTests.length === 0 ? 0 : 1;
     
     // Use reporter to generate output
-    reporter.onTestSuiteComplete(testResults, testFile || 'unknown');
+    reporter.onTestSuiteComplete(testResults, displayTestFile);
     const reporterOutput = reporter.generateOutput();
+    // If no output file is configured and a structured reporter is used,
+    // print the reporter output to stdout so CI parsers can pick it up
+    if ((finalConfig.reporter && finalConfig.reporter !== 'console') && !finalConfig.outputFile) {
+      console.log(reporterOutput);
+    }
     
     console.log(`\nTest suite finished ${exitCode === 0 ? 'successfully' : `with ${failedTests.length} errors`}`);
     

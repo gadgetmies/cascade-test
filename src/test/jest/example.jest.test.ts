@@ -1,11 +1,11 @@
-interface TestContext {
+interface ExampleTestContext {
   testData?: { value: number };
   timeout?: number;
   nestedData?: string;
 }
 
 describe('', () => {
-  let globalContext: TestContext = {};
+  let globalContext: ExampleTestContext = {};
 
   beforeAll(async () => {
     console.log('Setting up example tests...');
@@ -43,7 +43,7 @@ describe('', () => {
   });
 
   describe('Nested Suites', () => {
-    let nestedContext: TestContext = {};
+    let nestedContext: ExampleTestContext = {};
 
     beforeAll(async () => {
       nestedContext = {

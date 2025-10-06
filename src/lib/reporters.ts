@@ -3,6 +3,25 @@ import * as path from 'path';
 import { TestReporter, TestInfo, TestResult, CIEnvironment } from '../types.js';
 
 /**
+ * Convert absolute file path to relative path from current working directory
+ */
+function toRelativePath(absolutePath: string): string {
+  try {
+    // Handle file:// URLs by extracting the actual file path
+    let actualPath = absolutePath;
+    if (absolutePath.startsWith('file://')) {
+      actualPath = absolutePath.replace('file://', '');
+    }
+    
+    const relativePath = path.relative(process.cwd(), actualPath);
+    return relativePath;
+  } catch {
+    // If conversion fails, return the original path
+    return absolutePath;
+  }
+}
+
+/**
  * Detect CI environment from environment variables
  */
 export const detectCI = (): CIEnvironment => {
@@ -104,7 +123,8 @@ export class JUnitReporter implements TestReporter {
 
     const testCases = this.results.map(result => {
       const testName = result.path.slice(1).join('.');
-      const className = path.basename(this.testFile, path.extname(this.testFile));
+      const relativeTestFile = toRelativePath(this.testFile);
+      const className = path.basename(relativeTestFile, path.extname(relativeTestFile));
       
       if (result.status === 'passed') {
         return `    <testcase name="${testName}" classname="${className}" time="${result.duration / 1000}"/>`;
@@ -120,8 +140,9 @@ export class JUnitReporter implements TestReporter {
       }
     }).join('\n');
 
+    const relativeTestFile = toRelativePath(this.testFile);
     return `<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="${path.basename(this.testFile)}" tests="${totalTests}" failures="${failures}" errors="${errors}" skipped="${skipped}" time="${time}">
+<testsuite name="${path.basename(relativeTestFile)}" tests="${totalTests}" failures="${failures}" errors="${errors}" skipped="${skipped}" time="${time}">
 ${testCases}
 </testsuite>`;
   }
@@ -201,7 +222,7 @@ export class JSONReporter implements TestReporter {
     const duration = this.results.reduce((sum, r) => sum + r.duration, 0);
 
     return JSON.stringify({
-      testFile: this.testFile,
+      testFile: toRelativePath(this.testFile),
       summary: {
         total: totalTests,
         passed,
@@ -243,7 +264,7 @@ export class MochaJsonReporter implements TestReporter {
     const tests = this.results.map(r => ({
       title: r.path.slice(-1)[0],
       fullTitle: r.path.slice(1).join(' '),
-      file: this.testFile,
+      file: toRelativePath(this.testFile),
       duration: r.duration,
       currentRetry: 0,
       err: (r.status === 'passed' || r.status === 'skipped') ? {} : { message: r.error || 'Test failed' }

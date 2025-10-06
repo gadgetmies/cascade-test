@@ -1,5 +1,5 @@
 {
-  "testFile": "file:///Users/gadgetmies/Documents/Projects/Code/cascade-test/dist/test/examples/example.test.js",
+  "testFile": "[TEST_FILE_PATH]",
   "summary": {
     "total": 7,
     "passed": 4,

@@ -15,6 +15,8 @@
     "prepublishOnly": "npm run clean && npm run build",
     "test": "npm run build && node dist/bin/run-tests.js dist/test/integration",
     "test:dev": "npm run clean && npm run build && node dist/bin/run-tests.js dist/test/integration",
+    "test:fixtures": "npm run build && node dist/bin/run-tests.js dist/test/integration",
+    "test:reporters": "npm run build && node dist/bin/run-tests.js --regex='reporter-' dist/test/integration",
     "test:examples": "npm run build && node dist/bin/run-tests.js dist/test/examples",
     "test:examples-mocha-json": "npm run build && node dist/bin/run-tests.js --reporter=mocha-json --output=mocha-results.json dist/test/examples",
     "test:examples-junit": "npm run build && node dist/bin/run-tests.js --reporter=junit --output=test-results.xml dist/test/examples",
@@ -35,8 +37,11 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@types/lodash": "^4.17.20",
     "bluebird": "^3.7.2",
     "colors": "^1.4.0",
+    "jest-diff": "^30.2.0",
+    "lodash": "^4.17.21",
     "partial.lenses": "^14.17.0",
     "ramda": "^0.29.1",
     "yargs": "^17.7.2"

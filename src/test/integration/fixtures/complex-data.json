@@ -1,0 +1,24 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Alice",
+      "score": 95
+    },
+    {
+      "id": 2,
+      "name": "Bob",
+      "score": 87
+    },
+    {
+      "id": 3,
+      "name": "Charlie",
+      "score": 92
+    }
+  ],
+  "metadata": {
+    "total": 3,
+    "average": 91.33,
+    "generated": "[TIMESTAMP]"
+  }
+}
