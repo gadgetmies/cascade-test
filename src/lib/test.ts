@@ -272,8 +272,7 @@ ${printName(node[0], style)}${
               testResults.push({
                 name: key,
                 path: testPath,
-                passed: false,
-                skipped: true,
+                status: 'skipped',
                 duration: Date.now() - testStartTime
               });
             } else {
@@ -293,7 +292,7 @@ ${printName(node[0], style)}${
               testResults.push({
                 name: key,
                 path: testPath,
-                passed: !testError,
+                status: testError ? 'failed' : 'passed',
                 error: testError ? testError : undefined,
                 duration: testDuration
               });
@@ -360,9 +359,9 @@ ${printName(node[0], style)}${
     try {
       const testSummary = {
         total: testResults.length,
-        passed: testResults.filter(r => r.passed && !r.skipped).length,
-        failed: testResults.filter(r => !r.passed).length,
-        skipped: testResults.filter(r => r.skipped).length,
+        passed: testResults.filter(r => r.status === 'passed').length,
+        failed: testResults.filter(r => r.status === 'failed').length,
+        skipped: testResults.filter(r => r.status === 'skipped').length,
         failedTests: failedTests,
         results: testResults
       };

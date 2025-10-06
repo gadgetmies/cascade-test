@@ -41,11 +41,12 @@ export interface TestInfo {
   startTime: number;
 }
 
+export type TestStatus = 'passed' | 'failed' | 'skipped';
+
 export interface TestResult {
   name: string;
   path: string[];
-  passed: boolean;
-  skipped?: boolean;
+  status: TestStatus;
   error?: string;
   duration: number;
 }

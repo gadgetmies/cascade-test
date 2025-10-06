@@ -97,7 +97,7 @@ export class JUnitReporter implements TestReporter {
 
   generateOutput(): string {
     const totalTests = this.results.length;
-    const failures = this.results.filter(r => !r.passed).length;
+    const failures = this.results.filter(r => r.status === 'failed').length;
     const errors = 0; // We don't distinguish between failures and errors
     const time = this.results.reduce((sum, r) => sum + r.duration, 0) / 1000;
 
@@ -105,7 +105,7 @@ export class JUnitReporter implements TestReporter {
       const testName = result.path.slice(1).join('.');
       const className = path.basename(this.testFile, path.extname(this.testFile));
       
-      if (result.passed) {
+      if (result.status === 'passed') {
         return `    <testcase name="${testName}" classname="${className}" time="${result.duration / 1000}"/>`;
       } else {
         return `    <testcase name="${testName}" classname="${className}" time="${result.duration / 1000}">
@@ -152,7 +152,7 @@ export class TAPReporter implements TestReporter {
     const totalTests = this.results.length;
     const testLines = this.results.map((result, index) => {
       const testName = result.path.slice(1).join(' ');
-      if (result.passed) {
+      if (result.status === 'passed') {
         return `ok ${index + 1} - ${testName}`;
       } else {
         return `not ok ${index + 1} - ${testName}
@@ -190,8 +190,8 @@ export class JSONReporter implements TestReporter {
 
   generateOutput(): string {
     const totalTests = this.results.length;
-    const passed = this.results.filter(r => r.passed).length;
-    const failed = this.results.filter(r => !r.passed).length;
+    const passed = this.results.filter(r => r.status === 'passed').length;
+    const failed = this.results.filter(r => r.status === 'failed').length;
     const duration = this.results.reduce((sum, r) => sum + r.duration, 0);
 
     return JSON.stringify({
@@ -205,7 +205,7 @@ export class JSONReporter implements TestReporter {
       results: this.results.map(result => ({
         name: result.path.slice(1).join(' '),
         path: result.path,
-        passed: result.passed,
+        status: result.status,
         error: result.error,
         duration: result.duration
       }))
@@ -240,12 +240,12 @@ export class MochaJsonReporter implements TestReporter {
       file: this.testFile,
       duration: r.duration,
       currentRetry: 0,
-      err: r.passed || r.skipped ? {} : { message: r.error || 'Test failed' }
+      err: (r.status === 'passed' || r.status === 'skipped') ? {} : { message: r.error || 'Test failed' }
     }));
 
-    const passes = tests.filter((_, i) => this.results[i].passed);
-    const pending = tests.filter((_, i) => !!this.results[i].skipped);
-    const failures = tests.filter((_, i) => !this.results[i].passed && !this.results[i].skipped);
+    const passes = tests.filter((_, i) => this.results[i].status === 'passed');
+    const pending = tests.filter((_, i) => this.results[i].status === 'skipped');
+    const failures = tests.filter((_, i) => this.results[i].status === 'failed');
 
     const stats = {
       suites: 1,
