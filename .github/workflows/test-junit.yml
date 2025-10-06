@@ -1,4 +1,4 @@
-name: Test (junit)
+name: Demo failing results (junit)
 
 on:
   push:
@@ -31,15 +31,21 @@ jobs:
 
       - name: Run tests (junit)
         run: node dist/bin/run-tests.js dist/test --reporter=junit --output=test-results.xml --ci=github
+      - name: Upload JUnit XML artifact
+        if: !cancelled()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-xml-results
+          path: test-results.xml
+          if-no-files-found: error
 
       # Run regardless of previous step results, but skip on forked PRs (no permissions to publish checks)
       - name: Publish JUnit test results
-        if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+        if: ${{ !cancelled() }}
         uses: dorny/test-reporter@v1
         with:
           name: Cascade Test Results (JUnit)
           path: test-results.xml
           reporter: java-junit
-          fail-on-error: true
 
 

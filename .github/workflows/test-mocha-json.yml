@@ -1,4 +1,4 @@
-name: Test (mocha-json)
+name: Demo failing results (mocha-json)
 
 on:
   push:
@@ -33,7 +33,7 @@ jobs:
         run: node dist/bin/run-tests.js dist/test --reporter=mocha-json --output=mocha-results.json --ci=github
 
       - name: Upload Mocha JSON artifact
-        if: always()
+        if: !cancelled()
         uses: actions/upload-artifact@v4
         with:
           name: mocha-json-results
@@ -42,13 +42,12 @@ jobs:
 
       # Run regardless of previous step results, but skip on forked PRs (no permissions to publish checks)
       - name: Publish Mocha JSON test results
-        if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+        if: ${{ !cancelled() }}
         uses: dorny/test-reporter@v1
         with:
           name: Mocha JSON Results
           path: mocha-results.json
           reporter: mocha-json
-          fail-on-error: true
           use-job-summary: true
 
 

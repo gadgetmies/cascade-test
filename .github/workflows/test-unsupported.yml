@@ -1,0 +1,97 @@
+name: Demo failing results (unsupported reporters)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  tap:
+    name: TAP
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Run tests (tap)
+        run: node dist/bin/run-tests.js dist/test --reporter=tap --output=test-results.tap --ci=github || true
+
+      - name: Upload TAP artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tap-results
+          path: test-results.tap
+          if-no-files-found: error
+
+  json:
+    name: JSON
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Run tests (json)
+        run: node dist/bin/run-tests.js dist/test --reporter=json --output=test-results.json --ci=github || true
+
+      - name: Upload JSON artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: json-results
+          path: test-results.json
+          if-no-files-found: error
+
+  console:
+    name: Console
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Run tests (console)
+        run: node dist/bin/run-tests.js dist/test --reporter=console --ci=github 2>&1 | tee console-output.txt; test ${PIPESTATUS[0]} -eq 0 || true
+
+      - name: Upload console output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: console-output
+          path: console-output.txt
+          if-no-files-found: error
+
+
