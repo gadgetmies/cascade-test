@@ -1,0 +1,7 @@
+{
+  "extension": ["ts"],
+  "spec": "src/test/mocha/**/*.mocha.test.ts",
+  "require": ["ts-node/register/transpile-only"],
+  "timeout": 5000
+}
+

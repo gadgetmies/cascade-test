@@ -15,7 +15,13 @@
     "prepublishOnly": "npm run clean && npm run build",
     "test": "npm run build && node dist/bin/run-tests.js dist/test/integration",
     "test:dev": "npm run clean && npm run build && node dist/bin/run-tests.js dist/test/integration",
-    "test:examples": "npm run build && node dist/bin/run-tests.js dist/test/examples"
+    "test:examples": "npm run build && node dist/bin/run-tests.js dist/test/examples",
+    "test:examples-mocha-json": "npm run build && node dist/bin/run-tests.js --reporter=mocha-json --output=mocha-results.json dist/test/examples",
+    "test:examples-junit": "npm run build && node dist/bin/run-tests.js --reporter=junit --output=test-results.xml dist/test/examples",
+    "test:mocha": "mocha",
+    "test:mocha-json": "mocha --reporter json 2>/dev/null > mocha-results.json || true",
+    "test:jest": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:jest-junit": "NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "keywords": [
     "test",
@@ -29,16 +35,23 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "ramda": "^0.29.1",
-    "partial.lenses": "^14.17.0",
-    "colors": "^1.4.0",
     "bluebird": "^3.7.2",
+    "colors": "^1.4.0",
+    "partial.lenses": "^14.17.0",
+    "ramda": "^0.29.1",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/mocha": "^10.0.10",
     "@types/node": "^20.0.0",
     "@types/ramda": "^0.29.0",
     "@types/yargs": "^17.0.0",
+    "jest": "^30.2.0",
+    "jest-junit": "^16.0.0",
+    "mocha": "^11.7.4",
+    "ts-jest": "^29.4.4",
+    "ts-node": "^10.9.2",
     "typescript": "^5.0.0"
   },
   "engines": {

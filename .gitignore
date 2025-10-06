@@ -35,3 +35,5 @@ test-*.json
 *-results.tap
 *-results.json
 console-output.txt
+mocha-results.json
+jest-junit-results.xml
