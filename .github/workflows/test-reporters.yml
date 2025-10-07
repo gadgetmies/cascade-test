@@ -1,4 +1,4 @@
-name: Demo failing results (junit)
+name: Demo failing results
 
 on:
   push:
@@ -30,7 +30,9 @@ jobs:
         run: npm run build
 
       - name: Run tests (junit)
+        continue-on-error: true
         run: node dist/bin/run-tests.js dist/test/examples --reporter=junit --output=test-results.xml --ci=github
+
       - name: Upload JUnit XML artifact
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
@@ -47,6 +49,28 @@ jobs:
           name: Cascade Test Results (JUnit)
           path: test-results.xml
           reporter: java-junit
+          fail-on-error: false
+      
+      - name: Run tests (mocha-json)
+        continue-on-error: true
+        run: node dist/bin/run-tests.js dist/test/examples --reporter=mocha-json --output=mocha-results.json --ci=github
+
+      - name: Upload Mocha JSON artifact
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: mocha-json-results
+          path: mocha-results.json
+          if-no-files-found: error
+
+      # Run regardless of previous step results, but skip on forked PRs (no permissions to publish checks)
+      - name: Publish Mocha JSON test results
+        if: ${{ !cancelled() }}
+        uses: dorny/test-reporter@v1
+        with:
+          name: Mocha JSON Results
+          path: mocha-results.json
+          reporter: mocha-json
           fail-on-error: false
 
 
