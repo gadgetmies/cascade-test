@@ -216,11 +216,20 @@ ${printName(node[0], style)}${
             skippingReason = skipConfig.reason;
           } else {
             const skipDateString = typeof skipConfig.until === 'string' ? skipConfig.until : skipDate.toISOString();
+            const error = `Test skip expired on ${skipDateString}. Reason: ${skipConfig.reason}`;
+            
+            testResults.push({
+              name: currentPath.at(-1)!,
+              path: currentPath,
+              status: 'failed',
+              error
+            });
+
             return [[
               'skip-expired',
               {
                 skipped: false,
-                error: `Test skip expired on ${skipDateString}. Reason: ${skipConfig.reason}`,
+                error,
               }
             ] as TestStructure];
           }
@@ -254,11 +263,11 @@ ${printName(node[0], style)}${
 
         let singleResult: InternalTestResult | TestDescription[];
         const timeouts: TimeoutConfig[] = [];
+        const testStartTime = Date.now();
+        const testPath = [...currentPath, key];
+
         try {
-          if (R.is(Function, restElement)) {
-            const testStartTime = Date.now();
-            const testPath = [...currentPath, key];
-            
+          if (R.is(Function, restElement)) {            
             if (skippingReason) {
               singleResult = {
                 skipped: skippingReason,
@@ -268,8 +277,7 @@ ${printName(node[0], style)}${
               testResults.push({
                 name: key,
                 path: testPath,
-                status: 'skipped',
-                duration: Date.now() - testStartTime
+                status: 'skipped'
               });
             } else {
               const assertionTimeout = timeout(setupResult?.timeout || DefaultAssertionTimeout);
@@ -284,7 +292,6 @@ ${printName(node[0], style)}${
                 error: testError,
               };
               
-              // Record test result
               testResults.push({
                 name: key,
                 path: testPath,
@@ -310,7 +317,16 @@ ${printName(node[0], style)}${
           }
         } catch (e) {
           console.error(`Test '${key}' failed:`.red, e);
-          singleResult = { skipped: false, error: 'Uncaught exception: ' + (e as Error).message };
+          const error = 'Uncaught error: ' + (e as Error).message;
+          singleResult = { skipped: false, error };
+
+          testResults.push({
+            name: key,
+            path: testPath,
+            status: 'failed',
+            error,
+            duration: Date.now() - testStartTime
+          });
           timeouts.forEach((t) => t.cancel());
         }
         result.push([key, singleResult] as TestStructure);

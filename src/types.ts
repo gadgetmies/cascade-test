@@ -49,7 +49,7 @@ export interface TestResult {
   path: string[];
   status: TestStatus;
   error?: string;
-  duration: number;
+  duration?: number;
 }
 
 export interface TestSummary {

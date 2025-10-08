@@ -119,7 +119,7 @@ export class JUnitReporter implements TestReporter {
     const failures = this.results.filter(r => r.status === 'failed').length;
     const skipped = this.results.filter(r => r.status === 'skipped').length;
     const errors = 0;
-    const time = this.results.reduce((sum, r) => sum + r.duration, 0) / 1000;
+    const time = this.results.reduce((sum, r) => sum + (r.duration || 0), 0) / 1000;
 
     const testCases = this.results.map(result => {
       const testName = result.path.slice(1).join('.');
@@ -127,14 +127,14 @@ export class JUnitReporter implements TestReporter {
       const className = path.basename(relativeTestFile, path.extname(relativeTestFile));
       
       if (result.status === 'passed') {
-        return `    <testcase name="${testName}" classname="${className}" time="${result.duration / 1000}"/>`;
+        return `    <testcase name="${testName}" classname="${className}" time="${result.duration || 0 / 1000}"/>`;
       } else if (result.status === 'skipped') {
         const skipMessage = result.error ? this.escapeXml(result.error) : 'Test skipped';
-        return `    <testcase name="${testName}" classname="${className}" time="${result.duration / 1000}">
+        return `    <testcase name="${testName}" classname="${className}" time="${result.duration || 0 / 1000}">
       <skipped message="${skipMessage}"/>
     </testcase>`;
       } else {
-        return `    <testcase name="${testName}" classname="${className}" time="${result.duration / 1000}">
+        return `    <testcase name="${testName}" classname="${className}" time="${result.duration || 0 / 1000}">
       <failure message="${this.escapeXml(result.error || 'Test failed')}"/>
     </testcase>`;
       }
@@ -219,7 +219,7 @@ export class JSONReporter implements TestReporter {
     const totalTests = this.results.length;
     const passed = this.results.filter(r => r.status === 'passed').length;
     const failed = this.results.filter(r => r.status === 'failed').length;
-    const duration = this.results.reduce((sum, r) => sum + r.duration, 0);
+    const duration = this.results.reduce((sum, r) => sum + (r.duration || 0), 0);
 
     return JSON.stringify({
       testFile: toRelativePath(this.testFile),
@@ -282,7 +282,7 @@ export class MochaJsonReporter implements TestReporter {
       failures: failures.length,
       start: "2025-10-01T12:00:00.000Z",
       end: "2025-10-01T12:00:00.000Z",
-      duration: this.results.reduce((s, r) => s + r.duration, 0)
+      duration: this.results.reduce((s, r) => s + (r.duration || 0), 0)
     };
 
     const payload = {
