@@ -90,12 +90,21 @@ const main = async (testPath: string, regex: RegExp = /^(?!.*\.d\.ts$).*\.(js|ts
   
   if (failedTests.length !== 0) {
     console.log('\n' + '='.repeat(60).red);
-    console.log('FAILED TESTS'.red.bold);
+    console.log(`${allFailedTests.length} FAILED TEST CASES`.red.bold);
     console.log('='.repeat(60).red);
     
-    for (const failedTest of allFailedTests) {
-      console.log(`\n• ${failedTest.path.join(' → ')}`.red);
-      console.log(`  Error: ${failedTest.error}`.yellow);
+    for (const {testFile, failedTests} of allTestSummaries) {
+      if (failedTests.length === 0) {
+        continue;
+      }
+      
+      console.log(`\n${testFile}`.red.bold);
+      console.log('─'.repeat(60).red);
+      
+      for (const failedTest of failedTests) {
+        console.log(`  • ${failedTest.path.join(' → ')}`.red);
+        console.log(`    Reason: ${failedTest.error}`.yellow);
+      }
     }
     
     console.log('\n' + '='.repeat(60).red);

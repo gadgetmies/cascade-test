@@ -59,6 +59,7 @@ export interface TestSummary {
   skipped: number;
   failedTests: Array<{ path: string[]; error: string }>;
   results: TestResult[];
+  testFile: string;
 }
 
 export interface TestReporter {
