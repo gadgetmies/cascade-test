@@ -35,6 +35,7 @@ const DefaultAssertionTimeout = 5000;
 const DefaultGroupTimeout = 10000;
 
 const noop = (): null => null;
+const passThrough = (value: any): any => value;
 
 const timeout = (timeoutMs: number): TimeoutConfig => {
   let id: NodeJS.Timeout;
@@ -223,7 +224,7 @@ ${printName(node[0], style)}${
     { skippingReason, indent = 0, parentContext, currentPath = [] }: TestOptions & { currentPath?: string[] } = {}
   ): Promise<TestStructure[]> => {
     try {
-      const { setup = noop, teardown = noop, skip = noop, ...rest } = suite;
+      const { setup = passThrough, teardown = noop, skip = noop, ...rest } = suite;
 
       // Only evaluate this suite's skip if no ancestor has already marked it as skipped
       if (!skippingReason && skip !== noop) {
@@ -262,11 +263,6 @@ ${printName(node[0], style)}${
             }
           ] as TestStructure];
         }
-      }
-      
-      // If no setup was provided, inherit from parent context
-      if (setup === noop && parentContext) {
-        setupResult = parentContext;
       }
 
       const result: TestStructure[] = [];
