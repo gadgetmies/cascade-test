@@ -18,6 +18,7 @@ A test framework where context cascades through your test hierarchy. Plain JavaS
 - **CI Integration**: Native support for Jenkins, Azure DevOps, GitLab CI, and GitHub Actions
 - **Multiple Reporters**: JUnit XML, TAP, JSON, and console output formats
 - **Auto-Detection**: Automatically detects CI environment and applies appropriate annotations
+- **Code Coverage**: Built-in coverage support using c8 with multiple report formats (HTML, LCOV, Cobertura, etc.)
 
 ## Installation
 
@@ -214,12 +215,23 @@ cascade-test test/
 
 ### CLI Options
 
+#### Test Options
 - `path`: Directory to search for test files (required)
 - `--regex, -r`: Regex pattern to filter files (default: `/\.(js|ts)$/`)
-- `--reporter`: Test reporter to use (`console`, `junit`, `tap`, `json`)
+- `--reporter`: Test reporter to use (`console`, `junit`, `tap`, `json`, `mocha-json`)
 - `--output, -o`: Output file for structured reporters
 - `--ci`: CI environment for annotations (`jenkins`, `azure`, `gitlab`, `github`, `console`, `auto`)
 - `--help, -h`: Show help information
+
+#### Coverage Options
+- `--coverage`: Enable code coverage collection (default: `false`)
+- `--coverage-dir`: Directory for coverage output (default: `coverage`)
+- `--coverage-reporter`: Coverage reporters to use (default: `["text", "html"]`)
+  - Available reporters: `text`, `text-summary`, `html`, `lcov`, `json`, `cobertura`
+- `--coverage-exclude`: Patterns to exclude from coverage (can be specified multiple times)
+- `--coverage-include`: Patterns to include in coverage (can be specified multiple times)
+- `--coverage-all`: Include all files in coverage, even uncovered ones (default: `false`)
+- `--coverage-skip-full`: Skip files with 100% coverage in reports (default: `false`)
 
 ### Test Reporters
 
@@ -247,6 +259,163 @@ npx cascade-test test/ --reporter=tap --output=test-results.tap
 ```bash
 npx cascade-test test/ --reporter=json --output=test-results.json
 # Generates structured JSON output for custom integrations
+```
+
+### Code Coverage
+
+Cascade Test includes built-in code coverage support using c8 (Node.js native V8 coverage). Coverage is collected during test execution and can be reported in multiple formats.
+
+#### Basic Coverage Usage
+
+```bash
+# Enable coverage with default settings (text + html reports)
+npx cascade-test test/ --coverage
+
+# View coverage report in browser
+open coverage/index.html
+```
+
+#### Coverage Options
+
+- `--coverage`: Enable code coverage collection (default: `false`)
+- `--coverage-dir`: Directory for coverage output (default: `coverage`)
+- `--coverage-reporter`: Coverage reporters to use (default: `["text", "html"]`)
+- `--coverage-exclude`: Patterns to exclude from coverage
+- `--coverage-include`: Patterns to include in coverage
+- `--coverage-all`: Include all files in coverage, even uncovered ones (default: `false`)
+- `--coverage-skip-full`: Skip files with 100% coverage in reports (default: `false`)
+
+#### Coverage Reporters
+
+Cascade Test supports all c8/istanbul coverage reporters:
+
+- `text`: Terminal-based text summary (good for CI)
+- `text-summary`: Compact text summary
+- `html`: Interactive HTML report (great for local development)
+- `lcov`: LCOV format (for tools like Coveralls, Codecov)
+- `json`: JSON format for custom processing
+- `cobertura`: Cobertura XML format (for Azure DevOps, Jenkins)
+
+#### Coverage Examples
+
+```bash
+# HTML report for local development
+npx cascade-test test/ --coverage --coverage-reporter html
+
+# Multiple reporters
+npx cascade-test test/ --coverage --coverage-reporter text --coverage-reporter lcov
+
+# Custom coverage directory
+npx cascade-test test/ --coverage --coverage-dir .coverage
+
+# Exclude patterns (test files, node_modules)
+npx cascade-test test/ --coverage \
+  --coverage-exclude "**/*.test.js" \
+  --coverage-exclude "**/*.spec.js" \
+  --coverage-exclude "**/node_modules/**"
+
+# Include only specific patterns
+npx cascade-test test/ --coverage \
+  --coverage-include "src/**/*.js" \
+  --coverage-include "lib/**/*.js"
+
+# Include all files (even uncovered)
+npx cascade-test test/ --coverage --coverage-all
+
+# Skip files with 100% coverage
+npx cascade-test test/ --coverage --coverage-skip-full
+```
+
+#### Coverage Configuration File
+
+You can also configure coverage using a `.c8rc.json` file in your project root for more advanced options:
+
+```json
+{
+  "all": false,
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.js"
+  ],
+  "exclude": [
+    "**/*.test.ts",
+    "**/*.test.js",
+    "**/*.spec.ts",
+    "**/*.spec.js",
+    "**/node_modules/**",
+    "**/test/**",
+    "**/dist/**",
+    "**/*.d.ts"
+  ],
+  "reporter": [
+    "text",
+    "html",
+    "lcov"
+  ],
+  "reports-dir": "./coverage",
+  "skip-full": false,
+  "watermarks": {
+    "statements": [50, 80],
+    "functions": [50, 80],
+    "branches": [50, 80],
+    "lines": [50, 80]
+  }
+}
+```
+
+See `.c8rc.json.example` in the repository for a complete example configuration.
+
+#### CI Integration with Coverage
+
+**GitHub Actions with Codecov:**
+```yaml
+- name: Run Tests with Coverage
+  run: npx cascade-test test/ --coverage --coverage-reporter lcov
+
+- name: Upload Coverage to Codecov
+  uses: codecov/codecov-action@v3
+  with:
+    files: ./coverage/lcov.info
+```
+
+**Jenkins with Cobertura:**
+```groovy
+pipeline {
+    agent any
+    stages {
+        stage('Test with Coverage') {
+            steps {
+                sh 'npx cascade-test test/ --coverage --coverage-reporter cobertura'
+                cobertura coberturaReportFile: 'coverage/cobertura-coverage.xml'
+            }
+        }
+    }
+}
+```
+
+**Azure DevOps:**
+```yaml
+- script: npx cascade-test test/ --coverage --coverage-reporter cobertura
+  displayName: 'Run Tests with Coverage'
+
+- task: PublishCodeCoverageResults@1
+  inputs:
+    codeCoverageTool: 'Cobertura'
+    summaryFileLocation: 'coverage/cobertura-coverage.xml'
+```
+
+**GitLab CI with Coverage Badge:**
+```yaml
+test:
+  stage: test
+  script:
+    - npx cascade-test test/ --coverage --coverage-reporter text-summary --coverage-reporter lcov
+  coverage: '/Lines\s*:\s*(\d+\.\d+)%/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
 ```
 
 ### CI Integration
@@ -387,7 +556,11 @@ Add scripts to your `package.json` for easy environment management and different
     "test:dev": "NODE_ENV=development API_URL=http://localhost:3000 dotenv -e .env.dev npx cascade-test test/",
     "test:junit": "npx cascade-test test/ --reporter=junit --output=test-results.xml",
     "test:tap": "npx cascade-test test/ --reporter=tap --output=test-results.tap",
-    "test:json": "npx cascade-test test/ --reporter=json --output=test-results.json"
+    "test:json": "npx cascade-test test/ --reporter=json --output=test-results.json",
+    "test:coverage": "npx cascade-test test/ --coverage",
+    "test:coverage:html": "npx cascade-test test/ --coverage --coverage-reporter html",
+    "test:coverage:lcov": "npx cascade-test test/ --coverage --coverage-reporter lcov",
+    "test:coverage:ci": "npx cascade-test test/ --coverage --coverage-reporter text --coverage-reporter lcov"
   }
 }
 ```
@@ -435,11 +608,14 @@ Check `test/example.test.js`
 # Run tests with console output
 npx cascade-test test/
 
+# Run tests with code coverage
+npx cascade-test test/ --coverage
+
 # Generate JUnit XML for CI
 npx cascade-test test/ --reporter=junit --output=test-results.xml
 
-# Run with CI annotations
-npx cascade-test test/ --ci=auto
+# Run with coverage and CI integration
+npx cascade-test test/ --coverage --coverage-reporter lcov --ci=auto
 
 # Use environment variables
 CASCADE_TEST_REPORTER=junit npx cascade-test test/

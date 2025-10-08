@@ -37,3 +37,7 @@ test-*.json
 console-output.txt
 mocha-results.json
 jest-junit-results.xml
+
+# Coverage reports
+coverage/
+.nyc_output/

@@ -20,6 +20,10 @@
     "test:examples": "npm run build && node dist/bin/run-tests.js dist/test/examples",
     "test:examples-mocha-json": "npm run build && node dist/bin/run-tests.js --reporter=mocha-json --output=mocha-results.json dist/test/examples",
     "test:examples-junit": "npm run build && node dist/bin/run-tests.js --reporter=junit --output=test-results.xml dist/test/examples",
+    "test:coverage": "npm run build && node dist/bin/run-tests.js dist/test/examples --coverage",
+    "test:coverage:html": "npm run build && node dist/bin/run-tests.js dist/test/examples --coverage --coverage-reporter html",
+    "test:coverage:lcov": "npm run build && node dist/bin/run-tests.js dist/test/examples --coverage --coverage-reporter lcov",
+    "test:coverage:ci": "npm run build && node dist/bin/run-tests.js dist/test/examples --coverage --coverage-reporter text --coverage-reporter lcov",
     "test:mocha": "mocha",
     "test:mocha-json": "mocha --reporter json 2>/dev/null > mocha-results.json || true",
     "test:jest": "NODE_OPTIONS=--experimental-vm-modules jest",
@@ -39,6 +43,7 @@
   "dependencies": {
     "@types/lodash": "^4.17.20",
     "bluebird": "^3.7.2",
+    "c8": "^10.1.2",
     "colors": "^1.4.0",
     "jest-diff": "^30.2.0",
     "lodash": "^4.17.21",

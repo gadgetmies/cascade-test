@@ -30,10 +30,29 @@ export type CIEnvironment = 'jenkins' | 'azure' | 'gitlab' | 'github' | 'console
 
 export type TestReporterType = 'console' | 'junit' | 'tap' | 'json' | 'mocha-json';
 
+export type CoverageReporterType = 'html' | 'text' | 'lcov' | 'json' | 'text-summary' | 'cobertura';
+
+export interface CoverageConfig {
+  enabled: boolean;
+  reporter?: CoverageReporterType[];
+  directory?: string;
+  exclude?: string[];
+  include?: string[];
+  all?: boolean;
+  skipFull?: boolean;
+  watermarks?: {
+    statements?: [number, number];
+    functions?: [number, number];
+    branches?: [number, number];
+    lines?: [number, number];
+  };
+}
+
 export interface TestConfig {
   reporter?: TestReporterType;
   outputFile?: string;
   ci?: CIEnvironment;
+  coverage?: CoverageConfig;
 }
 
 export interface TestInfo {
