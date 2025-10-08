@@ -18,6 +18,7 @@ import {
   InternalTestResult
 } from '../types.js';
 import { createReporter, detectCI, addCIAnnotations } from './reporters.js';
+import { getDisplayTestFile } from './path-utils.js';
 
 // Internal types for test execution
 interface TestNode {
@@ -80,29 +81,6 @@ function getCallerFile(): string | undefined {
   return callerfile;
 }
 
-/**
- * Clean up test file path for display - make it relative and drop file extension
- */
-function getDisplayTestFile(testFile: string): string {
-  try {
-    // Handle file:// URLs by extracting the actual file path
-    let actualPath = testFile;
-    if (testFile.startsWith('file://')) {
-      actualPath = testFile.replace('file://', '');
-    }
-    
-    // Get relative path from current working directory
-    const relativePath = path.relative(process.cwd(), actualPath);
-    
-    // Drop the file extension
-    const pathWithoutExt = path.join(path.dirname(relativePath), path.basename(relativePath, path.extname(relativePath)));
-    
-    return pathWithoutExt;
-  } catch {
-    // If conversion fails, return the original path
-    return testFile;
-  }
-}
 
 const test: TestFunctionType = async (suite: TestSuite, config: TestConfig = {}): Promise<void> => {
   // Read configuration from environment variables if not provided
@@ -356,8 +334,11 @@ ${printName(node[0], style)}${
 
   try {
     const testFile = getCallerFile();
-    const displayTestFile = getDisplayTestFile(testFile || 'unknown');
-    console.log('Running test suite: \n'.cyan, displayTestFile.cyan);
+    const displayTestFile = getDisplayTestFile(testFile || 'unknown', process.env.CASCADE_TEST_BASE_PATH || process.cwd());
+    console.log('-'.repeat(60));
+    console.log('Running test suite:', displayTestFile);
+    console.log('-'.repeat(60), '\n');
+
     const result = [displayTestFile, await run(suite, { currentPath: [testFile || 'unknown'] })] as TestStructure;
     console.log(printStructure(result));
     
@@ -373,9 +354,8 @@ ${printName(node[0], style)}${
       console.log(reporterOutput);
     }
     
-    console.log(`\nTest suite finished ${exitCode === 0 ? 'successfully' : `with ${failedTests.length} errors`}`);
-    
-    // Add CI-specific annotations
+    console.log(`\nTest suite (${displayTestFile}) finished ${exitCode === 0 ? 'successfully'.green : `with ${failedTests.length} error(s)`.red}`);
+
     addCIAnnotations(failedTests, ci);
     
     // Write comprehensive test results to a temporary file for CLI consumption
@@ -387,7 +367,8 @@ ${printName(node[0], style)}${
         failed: testResults.filter(r => r.status === 'failed').length,
         skipped: testResults.filter(r => r.status === 'skipped').length,
         failedTests: failedTests,
-        results: testResults
+        results: testResults,
+        testFile: displayTestFile
       };
       fs.writeFileSync(tempFile, JSON.stringify(testSummary, null, 2));
     } catch (e) {

@@ -8,6 +8,7 @@ import { hideBin } from 'yargs/helpers';
 import * as path from 'path';
 import * as fs from 'fs';
 import { TestSummary } from '../types.js';
+import { getDisplayTestFile } from '../lib/path-utils.js';
 import 'colors';
 
 interface TestResult {
@@ -16,13 +17,14 @@ interface TestResult {
   output?: string;
 }
 
-const runTest = (test: string, config: { reporter?: string; outputFile?: string; ci?: string } = {}): Promise<TestResult> => {
+const runTest = (test: string, config: { reporter?: string; outputFile?: string; ci?: string; basePath: string }): Promise<TestResult> => {
   const child: ChildProcess = fork(test, [], {
     env: {
       ...process.env,
       CASCADE_TEST_REPORTER: config.reporter || 'console',
       CASCADE_TEST_OUTPUT: config.outputFile || '',
-      CASCADE_TEST_CI: config.ci || 'auto'
+      CASCADE_TEST_CI: config.ci || 'auto',
+      CASCADE_TEST_BASE_PATH: config.basePath
     }
   });
   let output = '';
@@ -52,7 +54,7 @@ const main = async (testPath: string, regex: RegExp = /^(?!.*\.d\.ts$).*\.(js|ts
   
   for (const test of testFiles) {
     try {
-      const result = await runTest(test, config);
+      const result = await runTest(test, {basePath: resolvedTestPath, ...config});
       exitStatuses.push(result);
       
       // Try to read test summary from temporary file
