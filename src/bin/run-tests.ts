@@ -102,7 +102,7 @@ const main = async (testPath: string, regex: RegExp = /^(?!.*\.d\.ts$).*\.(js|ts
       console.log('─'.repeat(60).red);
       
       for (const failedTest of failedTests) {
-        console.log(`  • ${failedTest.path.join(' → ')}`.red);
+        console.log(`  • ${failedTest.path.slice(1).join(' → ')}`.red);
         console.log(`    Reason: ${failedTest.error}`.yellow);
       }
     }
