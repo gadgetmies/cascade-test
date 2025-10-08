@@ -57,7 +57,7 @@ test({
   setup: async () => {
     // Setup code that runs before all tests in this suite
     const db = await connectToDatabase()
-    return { db, timeout: 10000 } // Return context for tests
+    return { db } // Return context for tests
   },
 
   teardown: async (context) => {
