@@ -15,23 +15,21 @@ test({
           nestedData: "nested",
         };
       },
-      "should access nested context": (context?: TestContext) => {
+      "should access nested context": (context?: TestContext): string | void => {
         if (context?.originalData !== "original") {
           return "Original context not available";
         }
         if (context?.nestedData !== "nested") {
           return "Nested context not available";
         }
-        return null;
       },
     },
     "with original context": {
-        "should have access to original context": (context?: TestContext) => {
+      "should have access to original context": (context?: TestContext): string | void => {
         if (context?.originalData !== "original") {
-            return "Nested context not available";
+          return "Nested context not available";
         }
-        return null;
-        },
-    }
+      },
+    },
   },
 });

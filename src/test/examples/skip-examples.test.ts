@@ -9,7 +9,7 @@ test({
       };
     },
 
-    'should be skipped': (): string | null => {
+    'should be skipped': (): string => {
       return 'This test should be skipped';
     },
 
@@ -21,7 +21,7 @@ test({
         };
       },
 
-      'expired skip should be skipped because of the skip at the higher level': (): string | null => {
+      'expired skip should be skipped because of the skip at the higher level': (): string => {
         return 'This should be skipped because of the skip at the higher level';
       }
     }
@@ -35,7 +35,7 @@ test({
       };
     },
 
-    'should fail due to expired skip': (): string | null => {
+    'should fail due to expired skip': (): string => {
       return 'This test should fail due to expired skip';
     }
   }

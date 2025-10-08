@@ -85,7 +85,7 @@ test({
       });
     },
 
-    "should read existing fixture data": () => {
+    "should read existing fixture data": (): string | void => {
       const fixtureData = readFixture("user-data.json");
 
       if (!fixtureData) {
@@ -99,8 +99,6 @@ test({
       if (fixtureData!.email !== "test@example.com") {
         return `Expected email 'test@example.com', got '${fixtureData.email}'`;
       }
-
-      return null;
     },
 
     "should create fixture programmatically": {
@@ -125,7 +123,7 @@ test({
           unlink(context!.fixturePath);
         } catch (e) {}
       },
-      "should return correct fixture path": (context?: TestContext) => {
+      "should return correct fixture path": (context?: TestContext): string | void => {
         // The fixture path should be in the source directory, not the dist directory
         // because the fixture utility maps compiled paths back to source paths
         const expectedRelativePath = "fixtures/config-data.json";
@@ -137,8 +135,6 @@ test({
         }
 
         assertFixture("config-data.json", context!.fixtureData);
-
-        return null;
       },
     },
   },

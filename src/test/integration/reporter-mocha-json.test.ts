@@ -34,70 +34,61 @@ test({
       return null;
     },
     "Mocha JSON output matches expected structure": {
-      "should have stats object": (context?: TestContext) => {
+      "should have stats object": (context?: TestContext): string | void => {
         if (!context!.result.reporterOutput.stats) {
           return "Mocha JSON output missing stats";
         }
-        return null;
       },
 
-      "should have correct test count": (context?: TestContext) => {
+      "should have correct test count": (context?: TestContext): string | void => {
         if (context!.result.reporterOutput.stats?.tests !== 7) {
           return `Mocha JSON output incorrect test count: ${context!.result.reporterOutput.stats?.tests}`;
         }
-        return null;
       },
 
-      "should have correct passes count": (context?: TestContext) => {
+      "should have correct passes count": (context?: TestContext): string | void => {
         if (context!.result.reporterOutput.stats?.passes !== 4) {
           return `Mocha JSON output incorrect passes count: ${context!.result.reporterOutput.stats?.passes}`;
         }
-        return null;
       },
 
-      "should have correct failures count": (context?: TestContext) => {
+      "should have correct failures count": (context?: TestContext): string | void => {
         if (context!.result.reporterOutput.stats?.failures !== 1) {
           return `Mocha JSON output incorrect failures count: ${context!.result.reporterOutput.stats?.failures}`;
         }
-        return null;
       },
 
-      "should have correct pending count": (context?: TestContext) => {
+      "should have correct pending count": (context?: TestContext): string | void => {
         if (context!.result.reporterOutput.stats?.pending !== 2) {
           return `Mocha JSON output incorrect pending count: ${context!.result.reporterOutput.stats?.pending}`;
         }
-        return null;
       },
 
-      "should have tests array": (context?: TestContext) => {
+      "should have tests array": (context?: TestContext): string | void => {
         if (!Array.isArray(context!.result.reporterOutput.tests)) {
           return "Mocha JSON output missing tests array";
         }
-        return null;
       },
 
-      "should have passes array": (context?: TestContext) => {
+      "should have passes array": (context?: TestContext): string | void => {
         if (!Array.isArray(context!.result.reporterOutput.passes)) {
           return "Mocha JSON output missing passes array";
         }
-        return null;
       },
 
-      "should have failures array": (context?: TestContext) => {
+      "should have failures array": (context?: TestContext): string | void => {
         if (!Array.isArray(context!.result.reporterOutput.failures)) {
           return "Mocha JSON output missing failures array";
         }
-        return null;
       },
 
-      "should have pending array": (context?: TestContext) => {
+      "should have pending array": (context?: TestContext): string | void => {
         if (!Array.isArray(context!.result.reporterOutput.pending)) {
           return "Mocha JSON output missing pending array";
         }
-        return null;
       },
 
-      "should have valid test items": (context?: TestContext) => {
+      "should have valid test items": (context?: TestContext): string | void => {
         for (const testItem of context!.result.reporterOutput.tests || []) {
           if (typeof testItem.title !== "string") {
             return "Test item missing title";
@@ -107,7 +98,6 @@ test({
             return "Test item missing fullTitle";
           }
         }
-        return null;
       },
     },
   },

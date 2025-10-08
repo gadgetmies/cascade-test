@@ -33,32 +33,28 @@ test({
       return null;
     },
     "JUnit XML output matches expected structure": {
-        "should have XML declaration": (context?: TestContext) => {
+        "should have XML declaration": (context?: TestContext): string | void => {
           if (!context!.result.reporterOutput.includes('<?xml version="1.0" encoding="UTF-8"?>')) {
             return "JUnit output is not valid XML";
           }
-          return null;
         },
   
-        "should have testsuite element": (context?: TestContext) => {
+        "should have testsuite element": (context?: TestContext): string | void => {
           if (!context!.result.reporterOutput.includes("<testsuite")) {
             return "JUnit output missing testsuite element";
           }
-          return null;
         },
   
-        "should have correct test count": (context?: TestContext) => {
+        "should have correct test count": (context?: TestContext): string | void => {
           if (!context!.result.reporterOutput.includes('tests="7"')) {
             return "JUnit output incorrect test count";
           }
-          return null;
         },
   
-        "should have correct failure count": (context?: TestContext) => {
+        "should have correct failure count": (context?: TestContext): string | void => {
           if (!context!.result.reporterOutput.includes('failures="1"')) {
             return "JUnit output incorrect failure count";
           }
-          return null;
         },
       },
   },

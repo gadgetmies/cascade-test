@@ -28,43 +28,37 @@ test({
           ...normalizeConfig(normalizationConfigs.json),
         }
       );
-      return null;
     },
 
     "JSON output matches expected structure": {
-        "should have summary object": (context?: TestContext) => {
+        "should have summary object": (context?: TestContext): string | void => {
           if (!context!.result.reporterOutput.summary) {
             return "JSON output missing summary";
           }
-          return null;
         },
   
-        "should have numeric summary.total": (context?: TestContext) => {
+        "should have numeric summary.total": (context?: TestContext): string | void => {
           if (typeof context!.result.reporterOutput.summary?.total !== "number") {
             return "JSON output summary.total is not a number";
           }
-          return null;
         },
   
-        "should have numeric summary.passed": (context?: TestContext) => {
+        "should have numeric summary.passed": (context?: TestContext): string | void => {
           if (typeof context!.result.reporterOutput.summary?.passed !== "number") {
             return "JSON output summary.passed is not a number";
           }
-          return null;
         },
   
-        "should have numeric summary.failed": (context?: TestContext) => {
+        "should have numeric summary.failed": (context?: TestContext): string | void => {
           if (typeof context!.result.reporterOutput.summary?.failed !== "number") {
             return "JSON output summary.failed is not a number";
           }
-          return null;
         },
   
-        "should have results array": (context?: TestContext) => {
+        "should have results array": (context?: TestContext): string | void => {
           if (!Array.isArray(context!.result.reporterOutput.results)) {
             return "JSON output missing results array";
           }
-          return null;
         },
       },
   },

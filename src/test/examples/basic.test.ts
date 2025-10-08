@@ -15,20 +15,18 @@ test({
   },
 
   'Basic Tests': {
-    'should pass simple assertion': (context?: TestContext): string | null => {
+    'should pass simple assertion': (context?: TestContext): string | void => {
       if (context?.testData?.value !== 42) {
         return 'Expected value to be 42';
       }
-      return null;
     },
 
-    'should handle async operations': async (context?: TestContext): Promise<string | null> => {
+    'should handle async operations': async (context?: TestContext): Promise<string | void> => {
       // Simulate async operation
       await new Promise(resolve => setTimeout(resolve, 100));
       if (context?.testData?.value && typeof context.testData.value === 'number' && context.testData.value * 2 !== 84) {
         return 'Math failed';
       }
-      return null;
     }
   }
 });

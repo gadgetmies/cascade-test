@@ -270,8 +270,7 @@ ${printName(node[0], style)}${
           if (R.is(Function, restElement)) {            
             if (skippingReason) {
               singleResult = {
-                skipped: skippingReason,
-                error: null,
+                skipped: skippingReason
               };
 
               testResults.push({
@@ -285,7 +284,7 @@ ${printName(node[0], style)}${
               const { cancel, promise: timeoutPromise } = assertionTimeout;
               const res = await Promise.race([(restElement as TestFunction)(setupResult), timeoutPromise]);
               const testDuration = Date.now() - testStartTime;
-              const testError = R.defaultTo(null, res);
+              const testError = res !== undefined ? res : undefined;
               
               singleResult = {
                 skipped: false,

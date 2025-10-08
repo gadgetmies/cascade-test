@@ -2,7 +2,7 @@ export interface TestContext {
   [key: string]: any;
   timeout?: number;
 }
-export type TestRunResult = string | null | undefined;
+export type TestRunResult = string | void;
 export type TestRunResultPromise = Promise<TestRunResult>
 export type TestFunction = (context?: TestContext) => TestRunResult | TestRunResultPromise;
 
@@ -71,7 +71,7 @@ export interface TestReporter {
 
 export interface InternalTestResult {
   skipped: boolean | string;
-  error: string | null;
+  error?: string;
 }
 
 export interface TestOptions {

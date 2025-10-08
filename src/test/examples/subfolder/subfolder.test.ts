@@ -1,9 +1,7 @@
-import { test } from '../../../index.js';
+import { test } from "../../../index.js";
 
 test({
-  'Tests in Subfolders': {
-    'should be included': () => {
-      return null;
-    },
+  "Tests in Subfolders": {
+    "should be included": () => {},
   },
 });

@@ -31,42 +31,36 @@ test({
           ...normalizeConfig(normalizationConfigs.tap),
         }
       );
-      return null;
     },
     "TAP output matches expected structure": {
-      "should have TAP version header": (context?: TestContext) => {
+      "should have TAP version header": (context?: TestContext): string | void=> {
         if (!context!.result.reporterOutput.includes("TAP version 13")) {
           return "TAP output missing version header";
         }
-        return null;
       },
 
-      "should have correct test plan": (context?: TestContext) => {
+      "should have correct test plan": (context?: TestContext): string | void => {
         if (!context!.result.reporterOutput.includes("1..7")) {
           return "TAP output incorrect test plan";
         }
-        return null;
       },
 
-      "should have ok directives": (context?: TestContext) => {
+      "should have ok directives": (context?: TestContext): string | void => {
         if (!context!.result.reporterOutput.match(/ok \d+/)) {
           return "TAP output missing ok directives";
         }
-        return null;
       },
 
-      "should have not ok directives": (context?: TestContext) => {
+      "should have not ok directives": (context?: TestContext): string | void => {
         if (!context!.result.reporterOutput.match(/not ok \d+/)) {
           return "TAP output missing not ok directives";
         }
-        return null;
       },
 
-      "should have test descriptions": (context?: TestContext) => {
+      "should have test descriptions": (context?: TestContext): string | void => {
         if (!context!.result.reporterOutput.includes("should pass simple assertion")) {
           return "TAP output missing test descriptions";
         }
-        return null;
       },
     },
   },
