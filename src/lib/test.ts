@@ -122,7 +122,7 @@ const test: TestFunctionType = async (suite: TestSuite, config: TestConfig = {})
         const value = node[key];
         if (R.is(Function, value)) {
           return [...acc, [key, value as TestFunction] as TestPath];
-        } else if (typeof value === 'object' && value !== null) {
+        } else if (typeof value === 'object') {
           const nestedPaths = extractFnPaths(value as TestNode);
           return [...acc, ...nestedPaths.map(path => [key, path] as unknown as TestPath)];
         }
