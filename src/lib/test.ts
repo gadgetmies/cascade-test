@@ -1,5 +1,4 @@
 import * as R from 'ramda';
-import * as L from 'partial.lenses';
 import * as fs from 'fs';
 import * as path from 'path';
 import 'colors';
@@ -15,8 +14,6 @@ import {
   SkipFunction,
   SkipConfig,
   TestConfig,
-  TestReporter,
-  TestInfo,
   TestResult,
   InternalTestResult
 } from '../types.js';
