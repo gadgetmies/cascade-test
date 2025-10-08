@@ -340,7 +340,7 @@ ${printName(node[0], style)}${
     console.log('-'.repeat(60), '\n');
 
     const result = [displayTestFile, await run(suite, { currentPath: [testFile || 'unknown'] })] as TestStructure;
-    console.log(printStructure(result));
+    console.log('\nResults:\n', printStructure(result));
     
     const failedTests = collectFailedTests(result);
     const exitCode = failedTests.length === 0 ? 0 : 1;
@@ -376,9 +376,6 @@ ${printName(node[0], style)}${
     }
     
     if (failedTests.length > 0) {
-      console.log('\n' + '-'.repeat(60).red);
-      console.log(`${testFile}`.red.bold);
-      console.log('-'.repeat(60).red);
       
       failedTests.forEach((failedTest) => {
         const pathString = failedTest.path.slice(1).join(' → ');
@@ -386,8 +383,8 @@ ${printName(node[0], style)}${
         console.log(`  Reason: ${failedTest.error}`.yellow);
       });
       
-      console.log('\n' + '-'.repeat(60).red + '\n');
     }
+    console.log('\n');
     
     // Don't exit immediately - let the process exit naturally
     // This allows the parent process to capture the output
