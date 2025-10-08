@@ -8,6 +8,10 @@ test({
 
     'should pass when no error returned': (): void => {
       // No return value means test passes
+    },
+
+    'should fail with uncaught exception': (): void => {
+      throw new Error('This test intentionally fails');
     }
   }
 });
