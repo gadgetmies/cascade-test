@@ -51,6 +51,10 @@ const main = async (testPath: string, regex: RegExp = /^(?!.*\.d\.ts$).*\.(js|ts
 
   const exitStatuses: TestResult[] = [];
   const allTestSummaries: TestSummary[] = [];
+
+  console.log('Found test files matching criteria:\n');
+  console.log(testFiles.map(f => getDisplayTestFile(f, resolvedTestPath)).join('\n'));
+  console.log('\n');
   
   for (const test of testFiles) {
     try {
