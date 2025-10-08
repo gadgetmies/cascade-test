@@ -21,13 +21,12 @@ import { createReporter, detectCI, addCIAnnotations } from './reporters.js';
 
 // Internal types for test execution
 interface TestNode {
-  [key: string]: TestFunction | TestSuite | SetupFunction | TeardownFunction | SkipFunction | number | undefined;
+  [key: string]: TestFunction | TestSuite | SetupFunction | TeardownFunction | SkipFunction;
 }
 
 type TestPath = [string, TestFunction] | [string, TestPath[]];
 
 type TestDescription = [string] | [string, TestDescription[]];
-
 
 type TestContent = InternalTestResult | TestDescription[];
 type TestStructure = [string, TestContent];
