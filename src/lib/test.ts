@@ -286,7 +286,7 @@ ${printName(node[0], style)}${
                 skipped: skippingReason,
                 error: null,
               };
-              // Record skipped test
+
               testResults.push({
                 name: key,
                 path: testPath,
