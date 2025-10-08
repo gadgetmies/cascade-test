@@ -93,25 +93,23 @@ const main = async (testPath: string, regex: RegExp = /\.(js|ts)$/, config: { re
     
     console.log('\n' + '='.repeat(60).red);
     
-    // Display summary
+    printTestSummary();
+    
+    process.exit(1);
+  }
+
+  printTestSummary();
+  
+  console.log('\nAll tests passed!'.green);
+  process.exit(0);
+
+  function printTestSummary() {
     console.log(`\nTest Summary:`.bold);
     console.log(`  Total: ${totalTests}`);
     console.log(`  Passed: ${totalPassed}`.green);
     console.log(`  Failed: ${totalFailed}`.red);
     console.log(`  Skipped: ${totalSkipped}`.yellow);
-    
-    process.exit(1);
   }
-
-  // Display success summary
-  console.log(`\nTest Summary:`.bold);
-  console.log(`  Total: ${totalTests}`);
-  console.log(`  Passed: ${totalPassed}`.green);
-  console.log(`  Failed: ${totalFailed}`.red);
-  console.log(`  Skipped: ${totalSkipped}`.yellow);
-  
-  console.log('\nAll tests passed!'.green);
-  process.exit(0);
 };
 
 const cli = yargsFactory(hideBin(process.argv)) as Argv;
