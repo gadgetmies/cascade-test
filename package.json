@@ -23,7 +23,7 @@
     "test:coverage": "npm run build && node dist/bin/run-tests.js dist/test/examples --coverage",
     "test:coverage:html": "npm run build && node dist/bin/run-tests.js dist/test/examples --coverage --coverage-reporter html",
     "test:coverage:lcov": "npm run build && node dist/bin/run-tests.js dist/test/examples --coverage --coverage-reporter lcov",
-    "test:coverage:ci": "npm run build && node dist/bin/run-tests.js dist/test/examples --coverage --coverage-reporter text --coverage-reporter lcov",
+    "test:coverage:ci": "npm run build && node dist/bin/run-tests.js dist/test/integration --coverage --coverage-reporter text --coverage-reporter lcov",
     "test:mocha": "mocha",
     "test:mocha-json": "mocha --reporter json 2>/dev/null > mocha-results.json || true",
     "test:jest": "NODE_OPTIONS=--experimental-vm-modules jest",

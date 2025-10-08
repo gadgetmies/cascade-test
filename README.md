@@ -1,6 +1,7 @@
 # Cascade Test
 
 [![Framework Integration Tests](https://github.com/gadgetmies/cascade-test/actions/workflows/test-framework.yml/badge.svg?branch=main)](https://github.com/gadgetmies/cascade-test/actions/workflows/test-framework.yml)
+[![codecov](https://codecov.io/gh/gadgetmies/cascade-test/branch/main/graph/badge.svg)](https://codecov.io/gh/gadgetmies/cascade-test)
 
 A test framework where context cascades through your test hierarchy. Plain JavaScript objects with automatic context passing.
 
@@ -368,14 +369,26 @@ See `.c8rc.json.example` in the repository for a complete example configuration.
 #### CI Integration with Coverage
 
 **GitHub Actions with Codecov:**
+
+This project includes a ready-to-use GitHub Actions workflow (`.github/workflows/coverage.yml`) that automatically runs coverage and uploads to Codecov. To enable it:
+
+1. Sign up at [codecov.io](https://codecov.io) with your GitHub account
+2. Add your repository to Codecov
+3. Add your Codecov token as a repository secret named `CODECOV_TOKEN`
+
+The workflow will automatically run on push to main and pull requests, updating the coverage badge.
+
+**Manual GitHub Actions Configuration:**
 ```yaml
 - name: Run Tests with Coverage
   run: npx cascade-test test/ --coverage --coverage-reporter lcov
 
 - name: Upload Coverage to Codecov
-  uses: codecov/codecov-action@v3
+  uses: codecov/codecov-action@v4
   with:
     files: ./coverage/lcov.info
+  env:
+    CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 ```
 
 **Jenkins with Cobertura:**
