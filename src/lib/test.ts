@@ -137,7 +137,7 @@ const test: TestFunctionType = async (suite: TestSuite, config: TestConfig = {})
   const printChildren = (children: string[], style: string = 'console'): string =>
     style === 'console' ? children.join('\n') : `<ul>\n${children.map((c) => `<li>${c}</li>\n`).join('')}\n</ul>\n`;
 
-  const getIndentString = (indent: number): string => Array(indent).join(' ');
+  const getIndentString = (indent: number): string => ' '.repeat(indent);
 
   interface FailedTest {
     path: string[];
