@@ -43,54 +43,6 @@ const runTest = (test: string, config: { reporter?: string; outputFile?: string;
   });
 };
 
-const parseFailedTests = (output: string): Array<{ path: string; error: string }> => {
-  const failedTests: Array<{ path: string; error: string }> = [];
-  
-  // Split output into lines and look for the FAILED TESTS section
-  const lines = output.split('\n');
-  let inFailedTestsSection = false;
-  let currentTest: { path?: string; error?: string } = {};
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    
-    if (line.includes('FAILED TESTS')) {
-      inFailedTestsSection = true;
-      continue;
-    }
-    
-    if (inFailedTestsSection && line.includes('='.repeat(60))) {
-      // End of section
-      if (currentTest.path && currentTest.error) {
-        failedTests.push({
-          path: currentTest.path,
-          error: currentTest.error
-        });
-      }
-      break;
-    }
-    
-    if (inFailedTestsSection) {
-      // Look for test path line: • path → path → path
-      if (line.trim().startsWith('•') && line.includes('→')) {
-        if (currentTest.path && currentTest.error) {
-          failedTests.push({
-            path: currentTest.path,
-            error: currentTest.error
-          });
-        }
-        currentTest = { path: line.trim().substring(1).trim() };
-      }
-      // Look for error line: Error: message
-      else if (line.trim().startsWith('Error:')) {
-        currentTest.error = line.trim().substring(6).trim();
-      }
-    }
-  }
-  
-  return failedTests;
-};
-
 const main = async (testPath: string, regex: RegExp = /\.(js|ts)$/, config: { reporter?: string; outputFile?: string; ci?: string } = {}): Promise<void> => {
   const testFiles = recursivelyFindByRegex(path.resolve(`${process.cwd()}/${testPath}`), regex);
 
