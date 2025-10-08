@@ -43,8 +43,9 @@ const runTest = (test: string, config: { reporter?: string; outputFile?: string;
   });
 };
 
-const main = async (testPath: string, regex: RegExp = /\.(js|ts)$/, config: { reporter?: string; outputFile?: string; ci?: string } = {}): Promise<void> => {
-  const testFiles = recursivelyFindByRegex(path.resolve(`${process.cwd()}/${testPath}`), regex);
+const main = async (testPath: string, regex: RegExp = /^(?!.*\.d\.ts$).*\.(js|ts)$/, config: { reporter?: string; outputFile?: string; ci?: string } = {}): Promise<void> => {
+  const resolvedTestPath = path.resolve(`${process.cwd()}/${testPath}`);
+  const testFiles = recursivelyFindByRegex(resolvedTestPath, regex);
 
   const exitStatuses: TestResult[] = [];
   const allTestSummaries: TestSummary[] = [];
@@ -149,7 +150,7 @@ cli
           default: 'auto',
         }),
     async (argv: ArgumentsCamelCase<{ path: string; regex?: string; reporter?: string; output?: string; ci?: string }>) => {
-      return await main(argv.path, argv.regex ? new RegExp(argv.regex) : /\.(js|ts)$/, {
+      return await main(argv.path, argv.regex ? new RegExp(argv.regex) : undefined, {
         reporter: argv.reporter as any,
         outputFile: argv.output,
         ci: argv.ci === 'auto' ? undefined : argv.ci as any
