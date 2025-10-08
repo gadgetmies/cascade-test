@@ -1,13 +1,9 @@
 import * as fs from "fs";
 import * as path from "path";
-import { fileURLToPath } from "url";
 import { FixtureConfig } from "../types.js";
 import { diff } from "jest-diff";
 import pkg from "lodash";
 const { isEqual } = pkg;
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 /**
  * Default configuration for fixture operations
