@@ -7,6 +7,7 @@ A test framework where context cascades through your test hierarchy. Plain JavaS
 ## Features
 
 - **Nested Test Suites**: Organize tests hierarchically with setup/teardown at any level
+- **Assertion Library Compatibility**: All assertion libraries that throw errors on assertion failures can be used in the tests.
 - **Async Support**: Full support for async/await and Promise-based tests
 - **Timeout Management**: Configurable timeouts for individual tests and test groups
 - **Test Skipping**: Skip tests conditionally with custom reasons
