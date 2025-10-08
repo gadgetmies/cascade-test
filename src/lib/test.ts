@@ -310,7 +310,7 @@ ${printName(node[0], style)}${
           }
         } catch (e) {
           console.error(`Test '${key}' failed:`.red, e);
-          singleResult = { skipped: false, error: (e as Error).toString() };
+          singleResult = { skipped: false, error: 'Uncaught exception: ' + (e as Error).message };
           timeouts.forEach((t) => t.cancel());
         }
         result.push([key, singleResult] as TestStructure);
@@ -383,7 +383,7 @@ ${printName(node[0], style)}${
       failedTests.forEach((failedTest) => {
         const pathString = failedTest.path.slice(1).join(' → ');
         console.log(`\n• ${pathString}`.red);
-        console.log(`  Error: ${failedTest.error}`.yellow);
+        console.log(`  Reason: ${failedTest.error}`.yellow);
       });
       
       console.log('\n' + '-'.repeat(60).red + '\n');
