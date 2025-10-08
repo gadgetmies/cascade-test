@@ -7,10 +7,12 @@ A test framework where context cascades through your test hierarchy. Plain JavaS
 ## Features
 
 - **Nested Test Suites**: Organize tests hierarchically with setup/teardown at any level
+- **Test Suites as Plain Objects**: Easily generate and modify test hierarchies as plain JavaScript objects
+- **Zero Global Pollution**: No global magic functions (describe, it, test, etc.)
 - **Assertion Library Compatibility**: All assertion libraries that throw errors on assertion failures can be used in the tests.
 - **Async Support**: Full support for async/await and Promise-based tests
 - **Timeout Management**: Configurable timeouts for individual tests and test groups
-- **Test Skipping**: Skip tests conditionally with custom reasons
+- **Test Skipping**: Skip tests conditionally **only** for a duration and with custom reasons
 - **File Discovery**: Automatic test file discovery with regex filtering
 - **CLI Runner**: Command-line tool for running multiple test files
 - **CI Integration**: Native support for Jenkins, Azure DevOps, GitLab CI, and GitHub Actions
@@ -88,7 +90,8 @@ test({
   },
 
   'API Tests': {
-    'should return 200': async () => {
+    'should return 200': async (context) => {
+      // The context is automatically passed down in the hierarchy and thus context.db is available here
       const response = await fetch('/api/test')
       if (response.status !== 200) {
         return `Expected 200, got ${response.status}`
