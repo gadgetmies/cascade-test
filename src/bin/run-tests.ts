@@ -380,5 +380,6 @@ cli
       );
     }
   )
+  .strict()
   .help()
   .alias("help", "h").argv;
