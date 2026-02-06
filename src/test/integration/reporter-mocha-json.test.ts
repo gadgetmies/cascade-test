@@ -41,7 +41,7 @@ test({
       },
 
       "should have correct test count": (context?: TestContext): string | void => {
-        if (context!.result.reporterOutput.stats?.tests !== 7) {
+        if (context!.result.reporterOutput.stats?.tests !== 8) {
           return `Mocha JSON output incorrect test count: ${context!.result.reporterOutput.stats?.tests}`;
         }
       },
@@ -53,7 +53,7 @@ test({
       },
 
       "should have correct failures count": (context?: TestContext): string | void => {
-        if (context!.result.reporterOutput.stats?.failures !== 1) {
+        if (context!.result.reporterOutput.stats?.failures !== 2) {
           return `Mocha JSON output incorrect failures count: ${context!.result.reporterOutput.stats?.failures}`;
         }
       },

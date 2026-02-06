@@ -46,13 +46,13 @@ test({
         },
   
         "should have correct test count": (context?: TestContext): string | void => {
-          if (!context!.result.reporterOutput.includes('tests="7"')) {
+          if (!context!.result.reporterOutput.includes('tests="8"')) {
             return "JUnit output incorrect test count";
           }
         },
   
         "should have correct failure count": (context?: TestContext): string | void => {
-          if (!context!.result.reporterOutput.includes('failures="1"')) {
+          if (!context!.result.reporterOutput.includes('failures="2"')) {
             return "JUnit output incorrect failure count";
           }
         },

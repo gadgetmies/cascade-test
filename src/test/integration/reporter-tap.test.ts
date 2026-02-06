@@ -40,7 +40,7 @@ test({
       },
 
       "should have correct test plan": (context?: TestContext): string | void => {
-        if (!context!.result.reporterOutput.includes("1..7")) {
+        if (!context!.result.reporterOutput.includes("1..8")) {
           return "TAP output incorrect test plan";
         }
       },

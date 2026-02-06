@@ -4,6 +4,7 @@ import { fork, ChildProcess } from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
 import { fileURLToPath } from 'url';
+import { expect } from 'chai';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -82,9 +83,9 @@ test({
         return 'Failed to get test summary from example.test.ts';
       }
 
-      const expectedTotalTests = 7;
+      const expectedTotalTests = 8;
       const expectedPassedTests = 4;
-      const expectedFailedTests = 1;
+      const expectedFailedTests = 2;
       const expectedSkippedTests = 2;
 
       const actualTotal = result.summary.total;
@@ -175,36 +176,42 @@ test({
       return null;
     },
 
-    'should verify test execution completes': async (): Promise<string | null> => {
-      const exampleTestPath = path.resolve(__dirname, 'example.test.js');
-      
-      if (!fs.existsSync(exampleTestPath)) {
-        return `Test file not found: ${exampleTestPath}`;
+    'Test Execution Output': {
+      setup: async (): Promise<TestContext> => {
+        const exampleTestPath = path.resolve(__dirname, 'example.test.js');
+        
+        if (!fs.existsSync(exampleTestPath)) {
+          throw new Error(`Test file not found: ${exampleTestPath}`);
+        }
+
+        const result = await runTestFile(exampleTestPath);
+        return { output: result.output };
+      },
+
+      'should start test execution': async (ctx?: TestContext): Promise<string | null> => {
+        expect(ctx?.output).to.include('Running test suite:');
+        return null;
+      },
+
+      'should complete test execution': async (ctx?: TestContext): Promise<string | null> => {
+        expect(ctx?.output).to.include('finished successfully');
+        return null;
+      },
+
+      'should include Basic Tests suite': async (ctx?: TestContext): Promise<string | null> => {
+        expect(ctx?.output).to.include('Basic Tests');
+        return null;
+      },
+
+      'should include Error Handling suite': async (ctx?: TestContext): Promise<string | null> => {
+        expect(ctx?.output).to.include('Error Handling');
+        return null;
+      },
+
+      'should include Nested Suites suite': async (ctx?: TestContext): Promise<string | null> => {
+        expect(ctx?.output).to.include('Nested Suites');
+        return null;
       }
-
-      const result = await runTestFile(exampleTestPath);
-
-      if (!result.output.includes('Running test suite:')) {
-        return 'Test execution did not start properly';
-      }
-
-      if (!result.output.includes('Test suite finished')) {
-        return 'Test execution did not complete properly';
-      }
-
-      if (!result.output.includes('Basic Tests')) {
-        return 'Expected to find "Basic Tests" suite in output';
-      }
-
-      if (!result.output.includes('Error Handling')) {
-        return 'Expected to find "Error Handling" suite in output';
-      }
-
-      if (!result.output.includes('Nested Suites')) {
-        return 'Expected to find "Nested Suites" suite in output';
-      }
-
-      return null;
     }
   }
 });

@@ -42,7 +42,9 @@ export const setupReporterTest = async (config: ReporterTestConfig): Promise<{ c
 
 export const normalizationConfigs = {
   json: {
-    testFile: '[TEST_FILE_PATH]'
+    testFile: '[TEST_FILE_PATH]',
+    duration: '[DURATION]',
+    'file:///.*?/example\\.test\\.js': '[TEST_FILE_PATH]'
   },
   
   junit: {
@@ -58,7 +60,7 @@ export const normalizationConfigs = {
   },
   
   mochaJson: {
-    'file:///.*?/example.test.js': '[TEST_FILE_PATH]',
+    'file:///.*?/example\\.test\\.js': '[TEST_FILE_PATH]',
     'start': '[TIMESTAMP]',
     'end': '[TIMESTAMP]',
     'duration': '[DURATION]'

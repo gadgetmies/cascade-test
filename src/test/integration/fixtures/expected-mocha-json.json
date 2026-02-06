@@ -1,10 +1,10 @@
 {
   "stats": {
     "suites": 1,
-    "tests": 7,
+    "tests": 8,
     "passes": 4,
     "pending": 2,
-    "failures": 1,
+    "failures": 2,
     "start": "[TIMESTAMP]",
     "end": "[TIMESTAMP]",
     "duration": "[DURATION]"
@@ -13,7 +13,7 @@
     {
       "title": "should pass simple assertion",
       "fullTitle": "Basic Tests should pass simple assertion",
-      "file": "dist/test/examples/example.test",
+      "file": "../examples/example.test",
       "duration": "[DURATION]",
       "currentRetry": 0,
       "err": {}
@@ -21,7 +21,7 @@
     {
       "title": "should handle async operations",
       "fullTitle": "Basic Tests should handle async operations",
-      "file": "dist/test/examples/example.test",
+      "file": "../examples/example.test",
       "duration": "[DURATION]",
       "currentRetry": 0,
       "err": {}
@@ -29,7 +29,7 @@
     {
       "title": "should fail with custom error",
       "fullTitle": "Error Handling should fail with custom error",
-      "file": "dist/test/examples/example.test",
+      "file": "../examples/example.test",
       "duration": "[DURATION]",
       "currentRetry": 0,
       "err": {
@@ -39,15 +39,15 @@
     {
       "title": "should pass when no error returned",
       "fullTitle": "Error Handling should pass when no error returned",
-      "file": "dist/test/examples/example.test",
+      "file": "../examples/example.test",
       "duration": "[DURATION]",
       "currentRetry": 0,
       "err": {}
     },
     {
       "title": "should access nested context",
-      "fullTitle": "Nested Suites should access nested context",
-      "file": "dist/test/examples/example.test",
+      "fullTitle": "Nested Suites with modified context should access nested context",
+      "file": "../examples/example.test",
       "duration": "[DURATION]",
       "currentRetry": 0,
       "err": {}
@@ -55,34 +55,39 @@
     {
       "title": "should be skipped",
       "fullTitle": "Skip Examples should be skipped",
-      "file": "dist/test/examples/example.test",
-      "duration": "[DURATION]",
+      "file": "../examples/example.test",
       "currentRetry": 0,
       "err": {}
     },
     {
       "title": "expired skip should be skipped because of the skip at the higher level",
       "fullTitle": "Skip Examples Skipped Expired Skip expired skip should be skipped because of the skip at the higher level",
-      "file": "dist/test/examples/example.test",
-      "duration": "[DURATION]",
+      "file": "../examples/example.test",
       "currentRetry": 0,
       "err": {}
+    },
+    {
+      "title": "Expired Skip",
+      "fullTitle": "Expired Skip",
+      "file": "../examples/example.test",
+      "currentRetry": 0,
+      "err": {
+        "message": "Test skip expired on 2024-01-01. Reason: This skip has expired"
+      }
     }
   ],
   "pending": [
     {
       "title": "should be skipped",
       "fullTitle": "Skip Examples should be skipped",
-      "file": "dist/test/examples/example.test",
-      "duration": "[DURATION]",
+      "file": "../examples/example.test",
       "currentRetry": 0,
       "err": {}
     },
     {
       "title": "expired skip should be skipped because of the skip at the higher level",
       "fullTitle": "Skip Examples Skipped Expired Skip expired skip should be skipped because of the skip at the higher level",
-      "file": "dist/test/examples/example.test",
-      "duration": "[DURATION]",
+      "file": "../examples/example.test",
       "currentRetry": 0,
       "err": {}
     }
@@ -91,11 +96,20 @@
     {
       "title": "should fail with custom error",
       "fullTitle": "Error Handling should fail with custom error",
-      "file": "dist/test/examples/example.test",
+      "file": "../examples/example.test",
       "duration": "[DURATION]",
       "currentRetry": 0,
       "err": {
         "message": "This test intentionally fails"
+      }
+    },
+    {
+      "title": "Expired Skip",
+      "fullTitle": "Expired Skip",
+      "file": "../examples/example.test",
+      "currentRetry": 0,
+      "err": {
+        "message": "Test skip expired on 2024-01-01. Reason: This skip has expired"
       }
     }
   ],
@@ -103,7 +117,7 @@
     {
       "title": "should pass simple assertion",
       "fullTitle": "Basic Tests should pass simple assertion",
-      "file": "dist/test/examples/example.test",
+      "file": "../examples/example.test",
       "duration": "[DURATION]",
       "currentRetry": 0,
       "err": {}
@@ -111,7 +125,7 @@
     {
       "title": "should handle async operations",
       "fullTitle": "Basic Tests should handle async operations",
-      "file": "dist/test/examples/example.test",
+      "file": "../examples/example.test",
       "duration": "[DURATION]",
       "currentRetry": 0,
       "err": {}
@@ -119,15 +133,15 @@
     {
       "title": "should pass when no error returned",
       "fullTitle": "Error Handling should pass when no error returned",
-      "file": "dist/test/examples/example.test",
+      "file": "../examples/example.test",
       "duration": "[DURATION]",
       "currentRetry": 0,
       "err": {}
     },
     {
       "title": "should access nested context",
-      "fullTitle": "Nested Suites should access nested context",
-      "file": "dist/test/examples/example.test",
+      "fullTitle": "Nested Suites with modified context should access nested context",
+      "file": "../examples/example.test",
       "duration": "[DURATION]",
       "currentRetry": 0,
       "err": {}

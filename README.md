@@ -20,6 +20,7 @@ A test framework where context cascades through your test hierarchy. Plain JavaS
 - **Multiple Reporters**: JUnit XML, TAP, JSON, and console output formats
 - **Auto-Detection**: Automatically detects CI environment and applies appropriate annotations
 - **Code Coverage**: Built-in coverage support using c8 with multiple report formats (HTML, LCOV, Cobertura, etc.)
+- **Fixture Utilities**: Test fixture management with automatic updates, data normalization, and environment-controlled updates
 
 ## Installation
 
@@ -608,6 +609,92 @@ test({
   }
 })
 ```
+
+## Fixture Utilities
+
+Cascade Test includes a comprehensive fixture utility for storing and asserting that test results match expected fixture contents. This makes it easy to create, update, and validate test fixtures with support for automatic updates via environment variables.
+
+### Basic Usage
+
+```javascript
+const { test } = require('cascade-test');
+const { assertFixture } = require('cascade-test/lib/fixture-utils.js');
+
+test({
+  'should match fixture data': () => {
+    const testData = {
+      name: 'John Doe',
+      email: 'john@example.com',
+      age: 30
+    };
+
+    assertFixture('user.json', testData);
+    return null;
+  }
+});
+```
+
+### Environment-Controlled Updates
+
+Fixtures can be automatically updated when the `UPDATE_FIXTURES` environment variable is set:
+
+```bash
+UPDATE_FIXTURES=true npm test
+```
+
+When enabled, `assertFixture` will automatically write the normalized test data to the fixture file before comparison, making it easy to update fixtures when expected outputs change.
+
+### Data Normalization
+
+The fixture utility supports normalizing dynamic data (timestamps, IDs, paths, etc.) before comparison:
+
+```javascript
+const { assertFixture, normalizeConfig } = require('cascade-test/lib/fixture-utils.js');
+
+test({
+  'should normalize dynamic data': () => {
+    const testData = {
+      timestamp: "2025-10-01T12:00:00.000Z",
+      id: 'unique-id-123',
+      duration: 1500,
+      user: {
+        name: 'John Doe',
+        createdAt: "2025-10-01T12:00:00.000Z"
+      }
+    };
+
+    assertFixture('normalized-data.json', testData, 
+      normalizeConfig({
+        timestamp: '[TIMESTAMP]',
+        id: '[ID]',
+        duration: '[DURATION]',
+        'user.createdAt': '[TIMESTAMP]'
+      })
+    );
+    return null;
+  }
+});
+```
+
+### Available Functions
+
+- **`assertFixture(fixtureName, testData, config?)`**: Asserts that test data matches fixture content
+- **`createFixture(fixtureName, data, config?)`**: Creates or updates a fixture file programmatically
+- **`readFixture(fixtureName, config?)`**: Reads fixture content from file
+- **`normalizeConfig(normalizations)`**: Creates a configuration with data normalization
+
+### Configuration Options
+
+```javascript
+{
+  fixturesDir: 'fixtures',           // Base directory for fixtures (default: 'fixtures')
+  serializer: (data) => string,       // Custom serializer (default: JSON.stringify)
+  deserializer: (data) => any,        // Custom deserializer (default: JSON.parse)
+  normalize: (data) => any            // Normalization function for dynamic data
+}
+```
+
+For complete documentation, see [`src/lib/README-fixture-utils.md`](src/lib/README-fixture-utils.md).
 
 ## Examples
 

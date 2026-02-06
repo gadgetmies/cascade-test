@@ -260,73 +260,100 @@ export function readFixture(
 /**
  * Utility function to create a fixture config for JSON fixtures with common normalizations
  *
- * @param normalizations - Object with keys to normalize and their replacement values
+ * @param normalizations - Object with keys to normalize and their replacement values.
+ *                        Keys can be property names for JSON data, or regex patterns (as strings) for string data.
  * @returns FixtureConfig with normalization function
  *
  * @example
  * ```typescript
- * // Normalize timestamps and IDs
+ * // Normalize timestamps and IDs in JSON
  * const result = await assertFixture('output.json', data, normalizeConfig({
  *   timestamp: '[TIMESTAMP]',
  *   id: '[ID]',
  *   duration: '[DURATION]'
+ * }));
+ *
+ * // Normalize string data (XML, TAP) with regex patterns
+ * const result = await assertFixture('output.xml', xmlString, normalizeConfig({
+ *   'time="[^"]*"': 'time="[NORMALIZED]"'
+ * }));
+ *
+ * // Normalize paths in string values using regex
+ * const result = await assertFixture('output.json', data, normalizeConfig({
+ *   testFile: '[TEST_FILE_PATH]',
+ *   'file:///.*?/example\\.test\\.js': '[TEST_FILE_PATH]'
  * }));
  * ```
  */
 export function normalizeConfig(
   normalizations: Record<string, any>
 ): FixtureConfig {
-  return {
-    normalize: (data: any) => {
-      if (typeof data !== "object" || data === null) {
-        return data;
-      }
-
-      if (Array.isArray(data)) {
-        return data.map((item) =>
-          normalizeConfig(normalizations).normalize!(item)
-        );
-      }
-
-      const normalized = { ...data };
-
-      // Handle nested property paths (e.g., 'user.createdAt')
-      for (const [path, replacement] of Object.entries(normalizations)) {
-        if (path.includes(".")) {
-          const keys = path.split(".");
-          let current = normalized;
-
-          // Navigate to the parent object
-          for (let i = 0; i < keys.length - 1; i++) {
-            if (current && typeof current === "object" && keys[i] in current) {
-              current = current[keys[i]];
-            } else {
-              current = null;
-              break;
-            }
-          }
-
-          // Set the final property
-          if (current && typeof current === "object") {
-            const finalKey = keys[keys.length - 1];
-            current[finalKey] = replacement;
-          }
-        } else {
-          // Handle direct properties
-          if (path in normalized) {
-            normalized[path] = replacement;
-          }
-        }
-      }
-
-      // Recursively normalize nested objects
-      for (const [key, value] of Object.entries(normalized)) {
-        if (typeof value === "object" && value !== null) {
-          normalized[key] = normalizeConfig(normalizations).normalize!(value);
-        }
-      }
-
-      return normalized;
-    },
+  const normalizeString = (value: string): string => {
+    let normalized = value;
+    
+    for (const [pattern, replacement] of Object.entries(normalizations)) {
+      const regex = new RegExp(pattern, 'g');
+      normalized = normalized.replace(regex, replacement);
+    }
+    
+    return normalized;
   };
+
+  const normalize = (data: any): any => {
+    if (typeof data === "string") {
+      return normalizeString(data);
+    }
+
+    if (typeof data !== "object" || data === null) {
+      return data;
+    }
+
+    if (Array.isArray(data)) {
+      return data.map((item) => normalize(item));
+    }
+
+    const normalized = { ...data };
+
+    // Handle nested property paths (e.g., 'user.createdAt')
+    for (const [path, replacement] of Object.entries(normalizations)) {
+      if (path.includes(".")) {
+        const keys = path.split(".");
+        let current = normalized;
+
+        // Navigate to the parent object
+        for (let i = 0; i < keys.length - 1; i++) {
+          if (current && typeof current === "object" && keys[i] in current) {
+            current = current[keys[i]];
+          } else {
+            current = null;
+            break;
+          }
+        }
+
+        // Set the final property
+        if (current && typeof current === "object") {
+          const finalKey = keys[keys.length - 1];
+          current[finalKey] = replacement;
+        }
+      } else {
+        // Handle direct properties
+        if (path in normalized) {
+          normalized[path] = replacement;
+        }
+      }
+    }
+
+    // Recursively normalize nested objects and apply string normalization
+    for (const [key, value] of Object.entries(normalized)) {
+      if (typeof value === "string") {
+        normalized[key] = normalizeString(value);
+      } else if (typeof value === "object" && value !== null) {
+        normalized[key] = normalize(value);
+      }
+    }
+
+    return normalized;
+  };
+
+  return { normalize };
 }
