@@ -4,64 +4,64 @@
     "total": 7,
     "passed": 4,
     "failed": 1,
-    "duration": 103
+    "duration": "[DURATION]"
   },
   "results": [
     {
       "name": "Basic Tests should pass simple assertion",
       "path": [
-        "file:///app/dist/test/examples/example.test.js",
+        "[TEST_FILE_PATH]",
         "Basic Tests",
         "should pass simple assertion"
       ],
       "status": "passed",
-      "duration": 1
+      "duration": "[DURATION]"
     },
     {
       "name": "Basic Tests should handle async operations",
       "path": [
-        "file:///app/dist/test/examples/example.test.js",
+        "[TEST_FILE_PATH]",
         "Basic Tests",
         "should handle async operations"
       ],
       "status": "passed",
-      "duration": 101
+      "duration": "[DURATION]"
     },
     {
       "name": "Error Handling should fail with custom error",
       "path": [
-        "file:///app/dist/test/examples/example.test.js",
+        "[TEST_FILE_PATH]",
         "Error Handling",
         "should fail with custom error"
       ],
       "status": "failed",
       "error": "This test intentionally fails",
-      "duration": 1
+      "duration": "[DURATION]"
     },
     {
       "name": "Error Handling should pass when no error returned",
       "path": [
-        "file:///app/dist/test/examples/example.test.js",
+        "[TEST_FILE_PATH]",
         "Error Handling",
         "should pass when no error returned"
       ],
       "status": "passed",
-      "duration": 0
+      "duration": "[DURATION]"
     },
     {
       "name": "Nested Suites should access nested context",
       "path": [
-        "file:///app/dist/test/examples/example.test.js",
+        "[TEST_FILE_PATH]",
         "Nested Suites",
         "should access nested context"
       ],
       "status": "passed",
-      "duration": 0
+      "duration": "[DURATION]"
     },
     {
       "name": "Skip Examples should be skipped",
       "path": [
-        "file:///app/dist/test/examples/example.test.js",
+        "[TEST_FILE_PATH]",
         "Skip Examples",
         "should be skipped"
       ],
@@ -70,7 +70,7 @@
     {
       "name": "Skip Examples Skipped Expired Skip expired skip should be skipped because of the skip at the higher level",
       "path": [
-        "file:///app/dist/test/examples/example.test.js",
+        "[TEST_FILE_PATH]",
         "Skip Examples",
         "Skipped Expired Skip",
         "expired skip should be skipped because of the skip at the higher level"

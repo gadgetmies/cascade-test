@@ -276,21 +276,41 @@ export function readFixture(
 export function normalizeConfig(
   normalizations: Record<string, any>
 ): FixtureConfig {
-  return {
-    normalize: (data: any) => {
-      if (typeof data !== "object" || data === null) {
-        return data;
+  const applyStringNormalizations = (str: string): string => {
+    let result = str;
+    for (const [pattern, replacement] of Object.entries(normalizations)) {
+      // Only apply if the replacement is a string (some normalizations are meant for object keys)
+      if (typeof replacement === "string") {
+        try {
+          // Check if pattern looks like it could be a regex but is actually a simple string match too
+          const regex = new RegExp(pattern, "g");
+          result = result.replace(regex, replacement);
+        } catch (e) {
+          // If not a valid regex, do a simple string replace
+          result = result.split(pattern).join(replacement);
+        }
       }
+    }
+    return result;
+  };
 
-      if (Array.isArray(data)) {
-        return data.map((item) =>
-          normalizeConfig(normalizations).normalize!(item)
-        );
-      }
+  const normalize = (data: any): any => {
+    if (data === null || data === undefined) {
+      return data;
+    }
 
+    if (typeof data === "string") {
+      return applyStringNormalizations(data);
+    }
+
+    if (Array.isArray(data)) {
+      return data.map((item) => normalize(item));
+    }
+
+    if (typeof data === "object") {
       const normalized = { ...data };
 
-      // Handle nested property paths (e.g., 'user.createdAt')
+      // Handle property paths (e.g., 'user.createdAt') and direct properties
       for (const [path, replacement] of Object.entries(normalizations)) {
         if (path.includes(".")) {
           const keys = path.split(".");
@@ -319,14 +339,22 @@ export function normalizeConfig(
         }
       }
 
-      // Recursively normalize nested objects
+      // Recursively normalize nested objects and also apply string normalizations to all string values
       for (const [key, value] of Object.entries(normalized)) {
-        if (typeof value === "object" && value !== null) {
-          normalized[key] = normalizeConfig(normalizations).normalize!(value);
+        if (typeof value === "string") {
+          normalized[key] = applyStringNormalizations(value);
+        } else if (typeof value === "object" && value !== null) {
+          normalized[key] = normalize(value);
         }
       }
 
       return normalized;
-    },
+    }
+
+    return data;
+  };
+
+  return {
+    normalize,
   };
 }
