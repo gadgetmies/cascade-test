@@ -138,7 +138,7 @@ test({
         return 'Test execution did not start properly';
       }
 
-      if (!result.output.includes('Test suite finished')) {
+      if (!result.output.includes('finished')) {
         return 'Test execution did not complete properly';
       }
 

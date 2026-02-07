@@ -189,7 +189,7 @@ ${printName(node[0], style)}${
             (node[1] as TestDescription[]).map((n: TestDescription) => indentString.concat(printStructure(n as TestStructure, style, indent + 2))),
             style,
           )
-        : (node[1] as InternalTestResult).error !== null
+        : (node[1] as InternalTestResult).error !== null && (node[1] as InternalTestResult).error !== undefined
           ? indentString.concat(printFail((node[1] as InternalTestResult).error!, style))
           : (node[1] as InternalTestResult).skipped
             ? indentString.concat(printSkip(style))
@@ -374,7 +374,7 @@ ${printName(node[0], style)}${
     addCIAnnotations(failedTests, ci);
     
     // Write comprehensive test results to a temporary file for CLI consumption
-    const tempFile = path.join(process.cwd(), '.cascade-test-results.json');
+    const resultsFile = process.env.CASCADE_TEST_RESULTS_FILE || path.join(process.cwd(), '.cascade-test-results.json');
     try {
       const testSummary = {
         total: testResults.length,
@@ -385,7 +385,7 @@ ${printName(node[0], style)}${
         results: testResults,
         testFile: displayTestFile
       };
-      fs.writeFileSync(tempFile, JSON.stringify(testSummary, null, 2));
+      fs.writeFileSync(resultsFile, JSON.stringify(testSummary, null, 2));
     } catch (e) {
       // Ignore file write errors
     }
