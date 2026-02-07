@@ -189,7 +189,7 @@ ${printName(node[0], style)}${
             (node[1] as TestDescription[]).map((n: TestDescription) => indentString.concat(printStructure(n as TestStructure, style, indent + 2))),
             style,
           )
-        : (node[1] as InternalTestResult).error !== null
+        : (node[1] as InternalTestResult).error !== null && (node[1] as InternalTestResult).error !== undefined
           ? indentString.concat(printFail((node[1] as InternalTestResult).error!, style))
           : (node[1] as InternalTestResult).skipped
             ? indentString.concat(printSkip(style))

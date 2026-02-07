@@ -69,7 +69,7 @@ export const runTestFile = (
         // For reporters that output to stdout (like JSON), extract the reporter output from stdout
         // The reporter output is typically the last line of output before the test summary
         const lines = output.split('\n');
-        const testSummaryIndex = lines.findIndex(line => line.includes('Test suite finished'));
+        const testSummaryIndex = lines.findIndex(line => line.includes('finished successfully') || line.includes('finished with'));
         if (testSummaryIndex > 0) {
           // Get the line before the test summary, which should be the reporter output
           const potentialReporterOutput = lines[testSummaryIndex - 1].trim();
