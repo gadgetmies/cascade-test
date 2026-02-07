@@ -3,6 +3,8 @@ import { TestContext, TestResult, TestSummary } from '../types.js';
 import { fork, ChildProcess } from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as os from 'os';
+import * as crypto from 'crypto';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -15,12 +17,18 @@ interface TestRunResult {
 }
 
 const runTestFile = (testFilePath: string): Promise<TestRunResult> => {
+  const resultsFile = path.join(
+    os.tmpdir(),
+    `cascade-test-results-${crypto.randomBytes(8).toString("hex")}.json`
+  );
+
   return new Promise((resolve, reject) => {
     const child: ChildProcess = fork(testFilePath, [], {
       env: {
         ...process.env,
         CASCADE_TEST_REPORTER: 'console',
-        CASCADE_TEST_CI: 'console'
+        CASCADE_TEST_CI: 'console',
+        CASCADE_TEST_RESULTS_FILE: resultsFile
       },
       silent: true
     });
@@ -37,13 +45,12 @@ const runTestFile = (testFilePath: string): Promise<TestRunResult> => {
 
     child.on('error', reject);
     child.on('exit', (code) => {
-      const tempFile = path.join(process.cwd(), '.cascade-test-results.json');
       let summary;
       
       try {
-        if (fs.existsSync(tempFile)) {
-          summary = JSON.parse(fs.readFileSync(tempFile, 'utf8'));
-          fs.unlinkSync(tempFile);
+        if (fs.existsSync(resultsFile)) {
+          summary = JSON.parse(fs.readFileSync(resultsFile, 'utf8'));
+          fs.unlinkSync(resultsFile);
         }
       } catch (e) {
         // Ignore errors
