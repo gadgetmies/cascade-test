@@ -1,6 +1,8 @@
 import { fork, ChildProcess } from "child_process";
 import * as path from "path";
 import * as fs from "fs";
+import * as os from "os";
+import * as crypto from "crypto";
 
 export interface TestRunResult {
   code: number;
@@ -16,41 +18,23 @@ export interface TestRunResult {
  * @param outputFile - Optional output file path for reporter output
  * @returns Promise with test run results
  */
-export const runTestFile = (
-  testFilePath: string,
-  reporter?: string,
-  outputFile?: string
-): Promise<TestRunResult> => {
+export const runTestFile = (testFilePath: string, reporter?: string, outputFile?: string): Promise<TestRunResult> => {
+  const tempResultsFile = path.join(os.tmpdir(), `ct-${crypto.randomBytes(8).toString("hex")}.json`);
   return new Promise((resolve, reject) => {
     const child: ChildProcess = fork(testFilePath, [], {
-      env: {
-        ...process.env,
-        CASCADE_TEST_REPORTER: reporter || "console",
-        CASCADE_TEST_OUTPUT: outputFile || "",
-        CASCADE_TEST_CI: "console",
-      },
+      env: { ...process.env, CASCADE_TEST_REPORTER: reporter || "console", CASCADE_TEST_OUTPUT: outputFile || "", CASCADE_TEST_CI: "console", CASCADE_TEST_RESULTS_FILE: tempResultsFile },
       silent: true,
     });
-
     let output = "";
-
-    child.stdout?.on("data", (data) => {
-      output += data.toString();
-    });
-
-    child.stderr?.on("data", (data) => {
-      output += data.toString();
-    });
-
+    child.stdout?.on("data", (data) => { output += data.toString(); });
+    child.stderr?.on("data", (data) => { output += data.toString(); });
     child.on("error", reject);
     child.on("exit", (code) => {
-      const tempFile = path.join(process.cwd(), ".cascade-test-results.json");
       let summary;
       let reporterOutput;
-
-      if (fs.existsSync(tempFile)) {
-        summary = JSON.parse(fs.readFileSync(tempFile, "utf8"));
-        fs.unlinkSync(tempFile);
+      if (fs.existsSync(tempResultsFile)) {
+        summary = JSON.parse(fs.readFileSync(tempResultsFile, "utf8"));
+        fs.unlinkSync(tempResultsFile);
       }
 
       if (outputFile) {

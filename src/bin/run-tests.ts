@@ -7,6 +7,8 @@ import type { Argv, ArgumentsCamelCase } from "yargs";
 import { hideBin } from "yargs/helpers";
 import * as path from "path";
 import * as fs from "fs";
+import * as os from "os";
+import * as crypto from "crypto";
 import { TestSummary } from "../types.js";
 import { getDisplayTestFile } from "../lib/path-utils.js";
 import "colors";
@@ -35,7 +37,8 @@ const runTest = (
     ci?: string;
     basePath: string;
     coverage?: CoverageOptions;
-  }
+  },
+  resultsFile: string
 ): Promise<TestResult> => {
   const child: ChildProcess = fork(test, [], {
     env: {
@@ -44,6 +47,7 @@ const runTest = (
       CASCADE_TEST_OUTPUT: config.outputFile || "",
       CASCADE_TEST_CI: config.ci || "auto",
       CASCADE_TEST_BASE_PATH: config.basePath,
+      CASCADE_TEST_RESULTS_FILE: resultsFile,
       NODE_V8_COVERAGE: config.coverage?.enabled ? config.coverage.directory : "",
     },
   });
@@ -149,26 +153,15 @@ const main = async (
 
   for (const test of testFiles) {
     try {
-      const result = await runTest(test, {
-        basePath: resolvedTestPath,
-        ...config,
-      });
+      const tempResultsFile = path.join(os.tmpdir(), `ct-${crypto.randomBytes(8).toString("hex")}.json`);
+      const result = await runTest(test, { basePath: resolvedTestPath, ...config }, tempResultsFile);
       exitStatuses.push(result);
-
-      // Try to read test summary from temporary file
-      const tempFile = path.join(process.cwd(), ".cascade-test-results.json");
       try {
-        if (fs.existsSync(tempFile)) {
-          const testSummary = JSON.parse(
-            fs.readFileSync(tempFile, "utf8")
-          ) as TestSummary;
-          allTestSummaries.push(testSummary);
-          // Clean up the temporary file
-          fs.unlinkSync(tempFile);
+        if (fs.existsSync(tempResultsFile)) {
+          allTestSummaries.push(JSON.parse(fs.readFileSync(tempResultsFile, "utf8")));
+          fs.unlinkSync(tempResultsFile);
         }
-      } catch (e) {
-        // Ignore file read errors
-      }
+      } catch (e) {}
     } catch (e) {
       console.error(`${test} execution failed!`, e);
       exitStatuses.push({ test, code: -1 });
