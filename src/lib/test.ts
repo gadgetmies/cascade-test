@@ -374,20 +374,22 @@ ${printName(node[0], style)}${
     addCIAnnotations(failedTests, ci);
     
     // Write comprehensive test results to a temporary file for CLI consumption
-    const tempFile = path.join(process.cwd(), '.cascade-test-results.json');
-    try {
-      const testSummary = {
-        total: testResults.length,
-        passed: testResults.filter(r => r.status === 'passed').length,
-        failed: testResults.filter(r => r.status === 'failed').length,
-        skipped: testResults.filter(r => r.status === 'skipped').length,
-        failedTests: failedTests,
-        results: testResults,
-        testFile: displayTestFile
-      };
-      fs.writeFileSync(tempFile, JSON.stringify(testSummary, null, 2));
-    } catch (e) {
-      // Ignore file write errors
+    const tempFile = process.env.CASCADE_TEST_RESULTS_FILE;
+    if (tempFile) {
+      try {
+        const testSummary = {
+          total: testResults.length,
+          passed: testResults.filter(r => r.status === 'passed').length,
+          failed: testResults.filter(r => r.status === 'failed').length,
+          skipped: testResults.filter(r => r.status === 'skipped').length,
+          failedTests: failedTests,
+          results: testResults,
+          testFile: displayTestFile
+        };
+        fs.writeFileSync(tempFile, JSON.stringify(testSummary, null, 2));
+      } catch (e) {
+        // Ignore file write errors
+      }
     }
     
     if (failedTests.length > 0) {
