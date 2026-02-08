@@ -382,14 +382,12 @@ ${printName(node[0], style)}${
           passed: testResults.filter(r => r.status === 'passed').length,
           failed: testResults.filter(r => r.status === 'failed').length,
           skipped: testResults.filter(r => r.status === 'skipped').length,
-          failedTests: failedTests,
+          failedTests,
           results: testResults,
           testFile: displayTestFile
         };
         fs.writeFileSync(tempFile, JSON.stringify(testSummary, null, 2));
-      } catch (e) {
-        // Ignore file write errors
-      }
+      } catch (e) {}
     }
     
     if (failedTests.length > 0) {

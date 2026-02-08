@@ -18,43 +18,20 @@ export interface TestRunResult {
  * @param outputFile - Optional output file path for reporter output
  * @returns Promise with test run results
  */
-export const runTestFile = (
-  testFilePath: string,
-  reporter?: string,
-  outputFile?: string
-): Promise<TestRunResult> => {
-  const tempResultsFile = path.join(
-    os.tmpdir(),
-    `cascade-test-results-${crypto.randomBytes(8).toString("hex")}.json`
-  );
-
+export const runTestFile = (testFilePath: string, reporter?: string, outputFile?: string): Promise<TestRunResult> => {
+  const tempResultsFile = path.join(os.tmpdir(), `ct-${crypto.randomBytes(8).toString("hex")}.json`);
   return new Promise((resolve, reject) => {
     const child: ChildProcess = fork(testFilePath, [], {
-      env: {
-        ...process.env,
-        CASCADE_TEST_REPORTER: reporter || "console",
-        CASCADE_TEST_OUTPUT: outputFile || "",
-        CASCADE_TEST_CI: "console",
-        CASCADE_TEST_RESULTS_FILE: tempResultsFile,
-      },
+      env: { ...process.env, CASCADE_TEST_REPORTER: reporter || "console", CASCADE_TEST_OUTPUT: outputFile || "", CASCADE_TEST_CI: "console", CASCADE_TEST_RESULTS_FILE: tempResultsFile },
       silent: true,
     });
-
     let output = "";
-
-    child.stdout?.on("data", (data) => {
-      output += data.toString();
-    });
-
-    child.stderr?.on("data", (data) => {
-      output += data.toString();
-    });
-
+    child.stdout?.on("data", (data) => { output += data.toString(); });
+    child.stderr?.on("data", (data) => { output += data.toString(); });
     child.on("error", reject);
     child.on("exit", (code) => {
       let summary;
       let reporterOutput;
-
       if (fs.existsSync(tempResultsFile)) {
         summary = JSON.parse(fs.readFileSync(tempResultsFile, "utf8"));
         fs.unlinkSync(tempResultsFile);

@@ -153,33 +153,15 @@ const main = async (
 
   for (const test of testFiles) {
     try {
-      const tempResultsFile = path.join(
-        os.tmpdir(),
-        `cascade-test-results-${crypto.randomBytes(8).toString("hex")}.json`
-      );
-      const result = await runTest(
-        test,
-        {
-          basePath: resolvedTestPath,
-          ...config,
-        },
-        tempResultsFile
-      );
+      const tempResultsFile = path.join(os.tmpdir(), `ct-${crypto.randomBytes(8).toString("hex")}.json`);
+      const result = await runTest(test, { basePath: resolvedTestPath, ...config }, tempResultsFile);
       exitStatuses.push(result);
-
-      // Try to read test summary from temporary file
       try {
         if (fs.existsSync(tempResultsFile)) {
-          const testSummary = JSON.parse(
-            fs.readFileSync(tempResultsFile, "utf8")
-          ) as TestSummary;
-          allTestSummaries.push(testSummary);
-          // Clean up the temporary file
+          allTestSummaries.push(JSON.parse(fs.readFileSync(tempResultsFile, "utf8")));
           fs.unlinkSync(tempResultsFile);
         }
-      } catch (e) {
-        // Ignore file read errors
-      }
+      } catch (e) {}
     } catch (e) {
       console.error(`${test} execution failed!`, e);
       exitStatuses.push({ test, code: -1 });

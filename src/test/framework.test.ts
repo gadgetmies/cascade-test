@@ -18,44 +18,24 @@ interface TestRunResult {
 }
 
 const runTestFile = (testFilePath: string): Promise<TestRunResult> => {
-  const tempResultsFile = path.join(
-    os.tmpdir(),
-    `cascade-test-results-${crypto.randomBytes(8).toString('hex')}.json`
-  );
-
+  const tempResultsFile = path.join(os.tmpdir(), `ct-${crypto.randomBytes(8).toString("hex")}.json`);
   return new Promise((resolve, reject) => {
     const child: ChildProcess = fork(testFilePath, [], {
-      env: {
-        ...process.env,
-        CASCADE_TEST_REPORTER: 'console',
-        CASCADE_TEST_CI: 'console',
-        CASCADE_TEST_RESULTS_FILE: tempResultsFile
-      },
+      env: { ...process.env, CASCADE_TEST_REPORTER: 'console', CASCADE_TEST_CI: 'console', CASCADE_TEST_RESULTS_FILE: tempResultsFile },
       silent: true
     });
-
     let output = '';
-
-    child.stdout?.on('data', (data) => {
-      output += data.toString();
-    });
-
-    child.stderr?.on('data', (data) => {
-      output += data.toString();
-    });
-
+    child.stdout?.on('data', (data) => { output += data.toString(); });
+    child.stderr?.on('data', (data) => { output += data.toString(); });
     child.on('error', reject);
     child.on('exit', (code) => {
       let summary;
-      
       try {
         if (fs.existsSync(tempResultsFile)) {
           summary = JSON.parse(fs.readFileSync(tempResultsFile, 'utf8'));
           fs.unlinkSync(tempResultsFile);
         }
-      } catch (e) {
-        // Ignore errors
-      }
+      } catch (e) {}
 
       resolve({
         code: code || 0,
