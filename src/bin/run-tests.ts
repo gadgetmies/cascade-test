@@ -7,6 +7,8 @@ import type { Argv, ArgumentsCamelCase } from "yargs";
 import { hideBin } from "yargs/helpers";
 import * as path from "path";
 import * as fs from "fs";
+import * as os from "os";
+import * as crypto from "crypto";
 import { TestSummary } from "../types.js";
 import { getDisplayTestFile } from "../lib/path-utils.js";
 import "colors";
@@ -34,6 +36,7 @@ const runTest = (
     outputFile?: string;
     ci?: string;
     basePath: string;
+    resultsFile: string;
     coverage?: CoverageOptions;
   }
 ): Promise<TestResult> => {
@@ -44,6 +47,7 @@ const runTest = (
       CASCADE_TEST_OUTPUT: config.outputFile || "",
       CASCADE_TEST_CI: config.ci || "auto",
       CASCADE_TEST_BASE_PATH: config.basePath,
+      CASCADE_TEST_RESULTS_FILE: config.resultsFile,
       NODE_V8_COVERAGE: config.coverage?.enabled ? config.coverage.directory : "",
     },
   });
@@ -148,23 +152,27 @@ const main = async (
   console.log("\n");
 
   for (const test of testFiles) {
+    const resultsFile = path.join(
+      os.tmpdir(),
+      `cascade-test-${crypto.randomBytes(8).toString("hex")}.json`
+    );
     try {
       const result = await runTest(test, {
         basePath: resolvedTestPath,
+        resultsFile,
         ...config,
       });
       exitStatuses.push(result);
 
       // Try to read test summary from temporary file
-      const tempFile = path.join(process.cwd(), ".cascade-test-results.json");
       try {
-        if (fs.existsSync(tempFile)) {
+        if (fs.existsSync(resultsFile)) {
           const testSummary = JSON.parse(
-            fs.readFileSync(tempFile, "utf8")
+            fs.readFileSync(resultsFile, "utf8")
           ) as TestSummary;
           allTestSummaries.push(testSummary);
           // Clean up the temporary file
-          fs.unlinkSync(tempFile);
+          fs.unlinkSync(resultsFile);
         }
       } catch (e) {
         // Ignore file read errors

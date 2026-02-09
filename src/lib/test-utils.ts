@@ -1,6 +1,8 @@
 import { fork, ChildProcess } from "child_process";
 import * as path from "path";
 import * as fs from "fs";
+import * as os from "os";
+import * as crypto from "crypto";
 
 export interface TestRunResult {
   code: number;
@@ -21,6 +23,11 @@ export const runTestFile = (
   reporter?: string,
   outputFile?: string
 ): Promise<TestRunResult> => {
+  const tempResultsFile = path.join(
+    os.tmpdir(),
+    `cascade-test-${crypto.randomBytes(8).toString("hex")}.json`
+  );
+
   return new Promise((resolve, reject) => {
     const child: ChildProcess = fork(testFilePath, [], {
       env: {
@@ -28,6 +35,7 @@ export const runTestFile = (
         CASCADE_TEST_REPORTER: reporter || "console",
         CASCADE_TEST_OUTPUT: outputFile || "",
         CASCADE_TEST_CI: "console",
+        CASCADE_TEST_RESULTS_FILE: tempResultsFile,
       },
       silent: true,
     });
@@ -44,7 +52,7 @@ export const runTestFile = (
 
     child.on("error", reject);
     child.on("exit", (code) => {
-      const tempFile = path.join(process.cwd(), ".cascade-test-results.json");
+      const tempFile = tempResultsFile;
       let summary;
       let reporterOutput;
 
