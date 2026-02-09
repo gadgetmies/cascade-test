@@ -374,7 +374,7 @@ ${printName(node[0], style)}${
     addCIAnnotations(failedTests, ci);
     
     // Write comprehensive test results to a temporary file for CLI consumption
-    const tempFile = path.join(process.cwd(), '.cascade-test-results.json');
+    const tempFile = process.env.CASCADE_TEST_RESULTS_FILE || path.join(process.cwd(), '.cascade-test-results.json');
     try {
       const testSummary = {
         total: testResults.length,
