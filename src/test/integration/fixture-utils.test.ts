@@ -137,5 +137,46 @@ test({
         assertFixture("config-data.json", context!.fixtureData);
       },
     },
+
+    "Security: Path Traversal": {
+      "should prevent reading files outside the fixtures directory": (): string | void => {
+        try {
+          readFixture("../../../package.json");
+          return "Security error: Should not be able to read files outside the fixtures directory";
+        } catch (err) {
+          const e = err as Error;
+          if (!e.message.includes("Path traversal detected")) {
+            return `Expected path traversal error, but got: ${e.message}`;
+          }
+        }
+        return;
+      },
+
+      "should prevent creating fixtures outside the fixtures directory": (): string | void => {
+        try {
+          createFixture("../../../malicious.json", { malicious: true });
+          return "Security error: Should not be able to create fixtures outside the fixtures directory";
+        } catch (err) {
+          const e = err as Error;
+          if (!e.message.includes("Path traversal detected")) {
+            return `Expected path traversal error, but got: ${e.message}`;
+          }
+        }
+        return;
+      },
+
+      "should prevent absolute paths in fixture name": (): string | void => {
+        try {
+          readFixture("/etc/passwd");
+          return "Security error: Should not be able to use absolute paths in fixture name";
+        } catch (err) {
+          const e = err as Error;
+          if (!e.message.includes("Path traversal detected") && !e.message.includes("Absolute paths are not allowed")) {
+            return `Expected security error for absolute path, but got: ${e.message}`;
+          }
+        }
+        return;
+      },
+    },
   },
 });
