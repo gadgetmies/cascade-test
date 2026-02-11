@@ -36,7 +36,20 @@ function getFixturePath(
   config: Required<FixtureConfig>
 ): string {
   const fixtureDir = getFixtureDir(callerFile, config.fixturesDir);
-  return path.join(fixtureDir, fixtureName);
+  const fixturePath = path.join(fixtureDir, fixtureName);
+
+  // Security check: ensure fixturePath is within fixtureDir to prevent path traversal
+  const resolvedFixtureDir = path.resolve(fixtureDir);
+  const resolvedFixturePath = path.resolve(fixturePath);
+  const relative = path.relative(resolvedFixtureDir, resolvedFixturePath);
+
+  if (relative.startsWith("..") || path.isAbsolute(relative)) {
+    throw new Error(
+      `Access denied: Fixture path is outside fixtures directory: ${fixtureName}`
+    );
+  }
+
+  return resolvedFixturePath;
 }
 
 function ensureFixtureDirExists(fixturePath: string): void {

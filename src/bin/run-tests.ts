@@ -7,6 +7,8 @@ import type { Argv, ArgumentsCamelCase } from "yargs";
 import { hideBin } from "yargs/helpers";
 import * as path from "path";
 import * as fs from "fs";
+import * as crypto from "crypto";
+import * as os from "os";
 import { TestSummary } from "../types.js";
 import { getDisplayTestFile } from "../lib/path-utils.js";
 import "colors";
@@ -36,7 +38,8 @@ const runTest = (
     basePath: string;
     coverage?: CoverageOptions;
   }
-): Promise<TestResult> => {
+): Promise<TestResult & { resultsFile: string }> => {
+  const resultsFile = path.join(os.tmpdir(), `cascade-results-${crypto.randomBytes(8).toString("hex")}.json`);
   const child: ChildProcess = fork(test, [], {
     env: {
       ...process.env,
@@ -44,13 +47,14 @@ const runTest = (
       CASCADE_TEST_OUTPUT: config.outputFile || "",
       CASCADE_TEST_CI: config.ci || "auto",
       CASCADE_TEST_BASE_PATH: config.basePath,
+      CASCADE_TEST_RESULTS_FILE: resultsFile,
       NODE_V8_COVERAGE: config.coverage?.enabled ? config.coverage.directory : "",
     },
   });
   let output = "";
 
-  return new Promise<TestResult>(function (
-    resolve: (value: TestResult) => void,
+  return new Promise<TestResult & { resultsFile: string }>(function (
+    resolve: (value: TestResult & { resultsFile: string }) => void,
     reject: (reason?: Error) => void
   ) {
     child.stdout?.on("data", (data) => {
@@ -63,7 +67,7 @@ const runTest = (
 
     child.addListener("error", reject);
     child.addListener("exit", (code) => {
-      resolve({ test, code: code || 0, output });
+      resolve({ test, code: code || 0, output, resultsFile });
     });
   });
 };
@@ -156,15 +160,15 @@ const main = async (
       exitStatuses.push(result);
 
       // Try to read test summary from temporary file
-      const tempFile = path.join(process.cwd(), ".cascade-test-results.json");
+      const resultsFile = result.resultsFile;
       try {
-        if (fs.existsSync(tempFile)) {
+        if (fs.existsSync(resultsFile)) {
           const testSummary = JSON.parse(
-            fs.readFileSync(tempFile, "utf8")
+            fs.readFileSync(resultsFile, "utf8")
           ) as TestSummary;
           allTestSummaries.push(testSummary);
           // Clean up the temporary file
-          fs.unlinkSync(tempFile);
+          fs.unlinkSync(resultsFile);
         }
       } catch (e) {
         // Ignore file read errors
