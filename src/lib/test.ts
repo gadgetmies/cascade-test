@@ -1,6 +1,8 @@
 import * as R from 'ramda';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
+import * as crypto from 'crypto';
 import 'colors';
 import {
   TestSuite,
@@ -374,7 +376,7 @@ ${printName(node[0], style)}${
     addCIAnnotations(failedTests, ci);
     
     // Write comprehensive test results to a temporary file for CLI consumption
-    const tempFile = path.join(process.cwd(), '.cascade-test-results.json');
+    const resultsFile = process.env.CASCADE_TEST_RESULTS_FILE || path.join(os.tmpdir(), `cascade-results-${crypto.randomBytes(8).toString('hex')}.json`);
     try {
       const testSummary = {
         total: testResults.length,
@@ -385,7 +387,7 @@ ${printName(node[0], style)}${
         results: testResults,
         testFile: displayTestFile
       };
-      fs.writeFileSync(tempFile, JSON.stringify(testSummary, null, 2));
+      fs.writeFileSync(resultsFile, JSON.stringify(testSummary, null, 2));
     } catch (e) {
       // Ignore file write errors
     }

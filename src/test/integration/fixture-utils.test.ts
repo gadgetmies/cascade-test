@@ -137,5 +137,32 @@ test({
         assertFixture("config-data.json", context!.fixtureData);
       },
     },
+
+    "Security: Path Traversal": {
+      "should not allow reading files outside fixtures directory": () => {
+        try {
+          // Try to read package.json which is outside the fixtures directory
+          readFixture("../../../../package.json");
+          return "Vulnerability: successfully read file outside fixtures directory";
+        } catch (error: any) {
+          if (error.message.includes("Access denied") && error.message.includes("outside fixtures directory")) {
+            return;
+          }
+          return `Unexpected error message: ${error.message}`;
+        }
+      },
+      "should not allow creating files outside fixtures directory": () => {
+        try {
+          // Try to create a file outside the fixtures directory
+          createFixture("../../../../traversal-test.json", { test: true });
+          return "Vulnerability: successfully created file outside fixtures directory";
+        } catch (error: any) {
+          if (error.message.includes("Access denied") && error.message.includes("outside fixtures directory")) {
+            return;
+          }
+          return `Unexpected error message: ${error.message}`;
+        }
+      }
+    }
   },
 });
