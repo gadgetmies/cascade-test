@@ -1,0 +1,4 @@
+## 2025-05-15 - Path Traversal in Fixture Utilities
+**Vulnerability:** The fixture loading utilities (`readFixture`, `createFixture`, `assertFixture`) were vulnerable to path traversal. By providing a `fixtureName` like `../../../../etc/passwd`, a user could potentially read or write files outside the intended fixtures directory.
+**Learning:** Using `path.join` with unsanitized user-provided subpaths allows escaping the base directory. Even in a testing framework, this can be a risk if test inputs are influenced by external data or if the framework is used in a shared environment.
+**Prevention:** Always validate that the resolved final path still resides within the intended base directory. Using `path.resolve` followed by `path.relative` and checking for `..` or absolute paths is a robust pattern for this.
