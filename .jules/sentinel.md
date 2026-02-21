@@ -1,0 +1,4 @@
+## 2026-02-21 - [XML Injection in JUnitReporter]
+**Vulnerability:** The `JUnitReporter` was generating XML output by directly embedding test names, class names, and suite names into XML attributes without proper escaping. This allowed for XML injection if test files or test cases were maliciously named.
+**Learning:** All dynamic data embedded in XML (especially attributes) must be escaped, even if the data comes from seemingly safe sources like file names or test descriptions. Additionally, operator precedence in duration calculations can lead to incorrect reporting (e.g., reporting milliseconds as seconds).
+**Prevention:** Use an `escapeXml` utility for all dynamic content in XML reporters. Ensure mathematical operations for unit conversions are properly grouped with parentheses to maintain correct operator precedence.
