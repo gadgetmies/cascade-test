@@ -32,7 +32,7 @@ test({
         ...normalizeConfig(normalizationConfigs.json),
       });
 
-      return null;
+      return;
     },
 
     "should demonstrate environment variable behavior": {
@@ -136,6 +136,29 @@ test({
 
         assertFixture("config-data.json", context!.fixtureData);
       },
+    },
+
+    "should prevent path traversal": () => {
+      const maliciousPath = "../../traversal.json";
+      try {
+        createFixture(maliciousPath, { pwned: true });
+        return "Expected path traversal to be blocked, but it was not.";
+      } catch (error: any) {
+        if (!error.message.includes("Path traversal detected")) {
+          return `Expected path traversal error message, but got: ${error.message}`;
+        }
+      }
+
+      try {
+        readFixture(maliciousPath);
+        return "Expected path traversal to be blocked during read, but it was not.";
+      } catch (error: any) {
+        if (!error.message.includes("Path traversal detected")) {
+          return `Expected path traversal error message during read, but got: ${error.message}`;
+        }
+      }
+
+      return;
     },
   },
 });
