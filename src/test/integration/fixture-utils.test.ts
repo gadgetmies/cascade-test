@@ -123,19 +123,37 @@ test({
           unlink(context!.fixturePath);
         } catch (e) {}
       },
-      "should return correct fixture path": (context?: TestContext): string | void => {
+      "should return correct fixture path": (
+        context?: TestContext
+      ): string | void => {
         // The fixture path should be in the source directory, not the dist directory
         // because the fixture utility maps compiled paths back to source paths
         const expectedRelativePath = "fixtures/config-data.json";
-        const expectedAbsolutePath = path.resolve(__dirname.replace('/dist/', '/src/'), expectedRelativePath);
-        
+        const expectedAbsolutePath = path.resolve(
+          __dirname.replace("/dist/", "/src/"),
+          expectedRelativePath
+        );
+
         if (context!.fixturePath !== expectedAbsolutePath) {
           const diffResult = diff(expectedAbsolutePath, context!.fixturePath);
-          return `Unexpected fixture path.\n\nDiff:\n${diffResult || "Values are different but no diff available"}`;
+          return `Unexpected fixture path.\n\nDiff:\n${
+            diffResult || "Values are different but no diff available"
+          }`;
         }
 
         assertFixture("config-data.json", context!.fixtureData);
       },
+    },
+
+    "should prevent path traversal": (): string | void => {
+      try {
+        readFixture("../../../package.json");
+        return "Should have thrown an error for path traversal";
+      } catch (error: any) {
+        if (!error.message.includes("Path traversal detected")) {
+          return `Expected path traversal error, got: ${error.message}`;
+        }
+      }
     },
   },
 });
