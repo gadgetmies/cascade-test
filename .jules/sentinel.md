@@ -1,0 +1,4 @@
+## 2025-05-15 - XML Injection and Path Traversal Fixes
+**Vulnerability:** Found XML injection in JUnitReporter where test names and metadata were not escaped, and path traversal in fixture-utils.ts where fixture names could reach outside the intended directory.
+**Learning:** Even if a framework provides an `escapeXml` utility, it must be consistently applied to ALL user-controlled attributes in the XML output. Duration calculation was also bugged due to operator precedence. Path validation for file operations should always use `path.resolve` followed by `path.relative` to ensure the final path stays within the intended root.
+**Prevention:** Use a centralized XML builder or ensure all template interpolations are escaped. Add automated security tests for path traversal and injection characters.
