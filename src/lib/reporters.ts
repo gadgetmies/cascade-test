@@ -122,27 +122,30 @@ export class JUnitReporter implements TestReporter {
     const time = this.results.reduce((sum, r) => sum + (r.duration || 0), 0) / 1000;
 
     const testCases = this.results.map(result => {
-      const testName = result.path.slice(1).join('.');
+      const testName = this.escapeXml(result.path.slice(1).join('.'));
       const relativeTestFile = toRelativePath(this.testFile);
-      const className = path.basename(relativeTestFile, path.extname(relativeTestFile));
+      const className = this.escapeXml(path.basename(relativeTestFile, path.extname(relativeTestFile)));
+      const durationSeconds = (result.duration || 0) / 1000;
       
       if (result.status === 'passed') {
-        return `    <testcase name="${testName}" classname="${className}" time="${result.duration || 0 / 1000}"/>`;
+        return `    <testcase name="${testName}" classname="${className}" time="${durationSeconds}"/>`;
       } else if (result.status === 'skipped') {
         const skipMessage = result.error ? this.escapeXml(result.error) : 'Test skipped';
-        return `    <testcase name="${testName}" classname="${className}" time="${result.duration || 0 / 1000}">
+        return `    <testcase name="${testName}" classname="${className}" time="${durationSeconds}">
       <skipped message="${skipMessage}"/>
     </testcase>`;
       } else {
-        return `    <testcase name="${testName}" classname="${className}" time="${result.duration || 0 / 1000}">
-      <failure message="${this.escapeXml(result.error || 'Test failed')}"/>
+        const failureMessage = this.escapeXml(result.error || 'Test failed');
+        return `    <testcase name="${testName}" classname="${className}" time="${durationSeconds}">
+      <failure message="${failureMessage}"/>
     </testcase>`;
       }
     }).join('\n');
 
     const relativeTestFile = toRelativePath(this.testFile);
+    const suiteName = this.escapeXml(path.basename(relativeTestFile));
     return `<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="${path.basename(relativeTestFile)}" tests="${totalTests}" failures="${failures}" errors="${errors}" skipped="${skipped}" time="${time}">
+<testsuite name="${suiteName}" tests="${totalTests}" failures="${failures}" errors="${errors}" skipped="${skipped}" time="${time}">
 ${testCases}
 </testsuite>`;
   }
