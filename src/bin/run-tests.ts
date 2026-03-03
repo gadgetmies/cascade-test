@@ -131,14 +131,32 @@ const main = async (
   const allTestSummaries: TestSummary[] = [];
 
   if (config.coverage?.enabled) {
+    const coverageDir = path.resolve(config.coverage.directory);
+    const relativePath = path.relative(process.cwd(), coverageDir);
+
+    // Security check: Ensure coverage directory is within CWD and not CWD itself to prevent arbitrary directory deletion
+    if (
+      relativePath.startsWith("..") ||
+      path.isAbsolute(relativePath) ||
+      relativePath === ""
+    ) {
+      console.error(
+        `Error: Coverage directory "${config.coverage.directory}" must be a subdirectory of the current working directory and cannot be the CWD itself.`
+          .red
+      );
+      process.exit(1);
+    }
+
     console.log("\nCode coverage enabled".green);
     console.log(`Coverage directory: ${config.coverage.directory}`.yellow);
-    console.log(`Coverage reporters: ${config.coverage.reporter.join(", ")}`.yellow);
-    
-    if (fs.existsSync(config.coverage.directory)) {
-      fs.rmSync(config.coverage.directory, { recursive: true, force: true });
+    console.log(
+      `Coverage reporters: ${config.coverage.reporter.join(", ")}`.yellow
+    );
+
+    if (fs.existsSync(coverageDir)) {
+      fs.rmSync(coverageDir, { recursive: true, force: true });
     }
-    fs.mkdirSync(config.coverage.directory, { recursive: true });
+    fs.mkdirSync(coverageDir, { recursive: true });
   }
 
   console.log("Found test files matching criteria:\n");
