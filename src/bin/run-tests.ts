@@ -134,7 +134,25 @@ const main = async (
     console.log("\nCode coverage enabled".green);
     console.log(`Coverage directory: ${config.coverage.directory}`.yellow);
     console.log(`Coverage reporters: ${config.coverage.reporter.join(", ")}`.yellow);
-    
+
+    const resolvedCoverageDir = path.resolve(config.coverage.directory);
+    const cwd = process.cwd();
+    const relative = path.relative(cwd, resolvedCoverageDir);
+
+    const isOutside = relative.startsWith("..") || path.isAbsolute(relative);
+    const isCwd = relative === "";
+
+    if (isOutside || isCwd) {
+      console.error(
+        `Error: Coverage directory '${config.coverage.directory}' is invalid.`.red
+      );
+      console.error(
+        "It must be a subdirectory of the current working directory and cannot be the CWD itself."
+          .red
+      );
+      process.exit(1);
+    }
+
     if (fs.existsSync(config.coverage.directory)) {
       fs.rmSync(config.coverage.directory, { recursive: true, force: true });
     }
