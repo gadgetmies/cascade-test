@@ -136,6 +136,15 @@ const main = async (
     console.log(`Coverage reporters: ${config.coverage.reporter.join(", ")}`.yellow);
     
     if (fs.existsSync(config.coverage.directory)) {
+      // Security check: Ensure we only delete subdirectories of CWD
+      const relativePath = path.relative(process.cwd(), path.resolve(config.coverage.directory));
+      const isOutside = relativePath.startsWith('..') || path.isAbsolute(relativePath) || relativePath === '';
+
+      if (isOutside) {
+        console.error(`Security Error: Coverage directory "${config.coverage.directory}" must be a subdirectory of the current working directory.`.red);
+        process.exit(1);
+      }
+
       fs.rmSync(config.coverage.directory, { recursive: true, force: true });
     }
     fs.mkdirSync(config.coverage.directory, { recursive: true });
