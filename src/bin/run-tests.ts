@@ -139,6 +139,8 @@ const main = async (
     const cwd = process.cwd();
     const relative = path.relative(cwd, resolvedCoverageDir);
 
+    // Security check: ensure coverage directory is a subdirectory of CWD
+    // and not the CWD itself to prevent arbitrary directory deletion.
     const isSafe = relative && !relative.startsWith('..') && !path.isAbsolute(relative);
 
     if (!isSafe) {
@@ -146,6 +148,9 @@ const main = async (
       console.error(`Attempted to use: ${resolvedCoverageDir}`.yellow);
       process.exit(1);
     }
+
+    // Use resolved path for all subsequent operations
+    config.coverage.directory = resolvedCoverageDir;
 
     if (fs.existsSync(config.coverage.directory)) {
       fs.rmSync(config.coverage.directory, { recursive: true, force: true });
