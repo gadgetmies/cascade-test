@@ -135,6 +135,23 @@ const main = async (
     console.log(`Coverage directory: ${config.coverage.directory}`.yellow);
     console.log(`Coverage reporters: ${config.coverage.reporter.join(", ")}`.yellow);
     
+    const resolvedCoverageDir = path.resolve(config.coverage.directory);
+    const cwd = process.cwd();
+    const relative = path.relative(cwd, resolvedCoverageDir);
+
+    // Security check: ensure coverage directory is a subdirectory of CWD
+    // and not the CWD itself to prevent arbitrary directory deletion.
+    const isSafe = relative && !relative.startsWith('..') && !path.isAbsolute(relative);
+
+    if (!isSafe) {
+      console.error(`\nSecurity Error: Coverage directory must be a subdirectory of the current working directory.`.red);
+      console.error(`Attempted to use: ${resolvedCoverageDir}`.yellow);
+      process.exit(1);
+    }
+
+    // Use resolved path for all subsequent operations
+    config.coverage.directory = resolvedCoverageDir;
+
     if (fs.existsSync(config.coverage.directory)) {
       fs.rmSync(config.coverage.directory, { recursive: true, force: true });
     }
