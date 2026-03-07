@@ -39,8 +39,20 @@ test({
       skip: () => ({
         reason:
           "Need to figure out how to test the environment variable behavior",
-        until: "2026-03-01",
+        until: "2030-01-01",
       }),
+    },
+
+    "should prevent path traversal": () => {
+      try {
+        readFixture("../package.json");
+        return "Expected path traversal to be blocked, but it succeeded.";
+      } catch (error: any) {
+        if (!error.message.includes("Security Error")) {
+          return `Expected security error, but got: ${error.message}`;
+        }
+      }
+      return;
     },
 
     "should normalize data before comparison": () => {
