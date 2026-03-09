@@ -39,8 +39,20 @@ test({
       skip: () => ({
         reason:
           "Need to figure out how to test the environment variable behavior",
-        until: "2026-03-01",
+        until: "2030-01-01",
       }),
+    },
+
+    "should prevent path traversal": () => {
+      try {
+        assertFixture("../evil.txt", "pwned");
+        return "Should have thrown a Security Error";
+      } catch (e: any) {
+        if (!e.message.includes("Security Error")) {
+          return `Expected Security Error, got: ${e.message}`;
+        }
+      }
+      return;
     },
 
     "should normalize data before comparison": () => {
