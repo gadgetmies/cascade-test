@@ -43,6 +43,18 @@ test({
       }),
     },
 
+    "should prevent path traversal": () => {
+      try {
+        assertFixture("../evil.txt", "pwned");
+        return "Should have thrown a Security Error";
+      } catch (e: any) {
+        if (!e.message.includes("Security Error")) {
+          return `Expected Security Error, got: ${e.message}`;
+        }
+      }
+      return;
+    },
+
     "should normalize data before comparison": () => {
       const testData = {
         timestamp: "2025-10-01T12:00:00.000Z",
