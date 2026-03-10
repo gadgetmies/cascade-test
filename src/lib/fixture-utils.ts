@@ -36,7 +36,15 @@ function getFixturePath(
   config: Required<FixtureConfig>
 ): string {
   const fixtureDir = getFixtureDir(callerFile, config.fixturesDir);
-  return path.join(fixtureDir, fixtureName);
+  const resolvedPath = path.join(fixtureDir, fixtureName);
+
+  // Security check: ensure the resolved path is within the fixture directory
+  const relativePath = path.relative(fixtureDir, resolvedPath);
+  if (relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
+    throw new Error(`Security Error: Path traversal detected. Fixture path '${fixtureName}' is outside of the fixtures directory '${fixtureDir}'.`);
+  }
+
+  return resolvedPath;
 }
 
 function ensureFixtureDirExists(fixturePath: string): void {
