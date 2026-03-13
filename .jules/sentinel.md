@@ -1,0 +1,4 @@
+## 2026-03-13 - Path Traversal in Fixture Utilities
+**Vulnerability:** The fixture utility functions (`assertFixture`, `createFixture`, `readFixture`) in `src/lib/fixture-utils.ts` were vulnerable to path traversal. A malicious or poorly configured test could supply a `fixtureName` containing path traversal sequences (e.g., `../../../etc/passwd`), allowing arbitrary file read or write (when `UPDATE_FIXTURES` is enabled) on the host system.
+**Learning:** Using `path.join` with untrusted input is insufficient for security. Even if the base directory is fixed, the resulting path can escape the intended root if the input contains `..` or absolute paths.
+**Prevention:** Always use `path.resolve` to get the absolute path, then verify that the resulting path is still within the intended root directory using `path.relative`. Check if the relative path starts with `..` or is an absolute path.
