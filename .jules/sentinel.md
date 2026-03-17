@@ -1,0 +1,4 @@
+## 2026-03-17 - Path Traversal in Fixture Utilities
+**Vulnerability:** The `assertFixture` and `createFixture` utilities in `src/lib/fixture-utils.ts` were vulnerable to path traversal. An attacker could provide a `fixtureName` containing traversal segments (e.g., `../../../package.json`) to read or overwrite arbitrary files on the system, provided the process had sufficient permissions.
+**Learning:** Using `path.join` with unsanitized user-provided filenames is insufficient for security. Even if the base directory is trusted, the resulting path can escape it if the filename contains `..`.
+**Prevention:** Always resolve the final path using `path.resolve` and then verify that it still resides within the intended base directory using `path.relative`. Check if the relative path starts with `..` or is absolute to detect escape attempts.
