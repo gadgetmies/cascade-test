@@ -1,0 +1,4 @@
+## 2026-03-15 - [Path Traversal in Fixture Utilities]
+**Vulnerability:** A Path Traversal vulnerability was identified in `src/lib/fixture-utils.ts` where `assertFixture` and related functions did not validate that the resolved fixture path remained within the intended `fixturesDir`. An attacker could potentially read or write files outside the fixtures directory by providing a manipulated `fixtureName` (e.g., `../../../package.json`).
+**Learning:** `path.join` and `path.resolve` do not prevent traversal; their outputs must be validated against a base directory using `path.relative` or similar techniques.
+**Prevention:** Always validate that resolved file paths remain within their intended directories. For Node.js, this can be done by checking if `path.relative(baseDir, resolvedPath)` starts with `..` or is an absolute path.
