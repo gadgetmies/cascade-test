@@ -36,7 +36,19 @@ function getFixturePath(
   config: Required<FixtureConfig>
 ): string {
   const fixtureDir = getFixtureDir(callerFile, config.fixturesDir);
-  return path.join(fixtureDir, fixtureName);
+  const resolvedPath = path.join(fixtureDir, fixtureName);
+
+  // Security check: Ensure the resolved path is within the fixture directory
+  // path.relative will return a path that starts with '..' if it's outside
+  // or it might be an absolute path if they are on different drives (though rare on Linux)
+  const relative = path.relative(fixtureDir, resolvedPath);
+  if (relative.startsWith("..") || path.isAbsolute(fixtureName)) {
+    throw new Error(
+      `Security Error: Fixture path '${fixtureName}' attempts to traverse outside of '${config.fixturesDir}'`
+    );
+  }
+
+  return resolvedPath;
 }
 
 function ensureFixtureDirExists(fixturePath: string): void {
