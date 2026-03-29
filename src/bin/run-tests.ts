@@ -136,6 +136,11 @@ const main = async (
     console.log(`Coverage reporters: ${config.coverage.reporter.join(", ")}`.yellow);
     
     if (fs.existsSync(config.coverage.directory)) {
+      // Security check: only allow deletion if directory is within current working directory
+      const resolvedCoverageDir = path.resolve(config.coverage.directory);
+      if (!resolvedCoverageDir.startsWith(process.cwd())) {
+        throw new Error(`Security Error: Coverage directory '${config.coverage.directory}' is outside of project root.`);
+      }
       fs.rmSync(config.coverage.directory, { recursive: true, force: true });
     }
     fs.mkdirSync(config.coverage.directory, { recursive: true });
