@@ -126,15 +126,16 @@ export class JUnitReporter implements TestReporter {
       const relativeTestFile = toRelativePath(this.testFile);
       const className = path.basename(relativeTestFile, path.extname(relativeTestFile));
       
+      const durationInSeconds = (result.duration || 0) / 1000;
       if (result.status === 'passed') {
-        return `    <testcase name="${testName}" classname="${className}" time="${result.duration || 0 / 1000}"/>`;
+        return `    <testcase name="${testName}" classname="${className}" time="${durationInSeconds}"/>`;
       } else if (result.status === 'skipped') {
         const skipMessage = result.error ? this.escapeXml(result.error) : 'Test skipped';
-        return `    <testcase name="${testName}" classname="${className}" time="${result.duration || 0 / 1000}">
+        return `    <testcase name="${testName}" classname="${className}" time="${durationInSeconds}">
       <skipped message="${skipMessage}"/>
     </testcase>`;
       } else {
-        return `    <testcase name="${testName}" classname="${className}" time="${result.duration || 0 / 1000}">
+        return `    <testcase name="${testName}" classname="${className}" time="${durationInSeconds}">
       <failure message="${this.escapeXml(result.error || 'Test failed')}"/>
     </testcase>`;
       }
