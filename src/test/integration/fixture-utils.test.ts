@@ -39,7 +39,7 @@ test({
       skip: () => ({
         reason:
           "Need to figure out how to test the environment variable behavior",
-        until: "2026-03-01",
+        until: "2026-12-31",
       }),
     },
 

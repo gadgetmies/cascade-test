@@ -36,7 +36,20 @@ function getFixturePath(
   config: Required<FixtureConfig>
 ): string {
   const fixtureDir = getFixtureDir(callerFile, config.fixturesDir);
-  return path.join(fixtureDir, fixtureName);
+  const resolvedFixturePath = path.resolve(fixtureDir, fixtureName);
+
+  // Security Check: Ensure the fixture name doesn't lead outside the fixture directory
+  // This prevents path traversal vulnerabilities
+  if (path.isAbsolute(fixtureName)) {
+    throw new Error(`Security Error: Absolute paths are not allowed for fixture names: ${fixtureName}`);
+  }
+
+  const relative = path.relative(fixtureDir, resolvedFixturePath);
+  if (relative.startsWith("..") || path.isAbsolute(relative)) {
+    throw new Error(`Security Error: Path traversal attempt detected in fixture name: ${fixtureName}`);
+  }
+
+  return resolvedFixturePath;
 }
 
 function ensureFixtureDirExists(fixturePath: string): void {
