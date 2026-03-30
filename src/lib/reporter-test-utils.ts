@@ -17,7 +17,7 @@ export interface ReporterTestConfig {
 }
 
 export const setupReporterTest = async (config: ReporterTestConfig): Promise<{ config: ReporterTestConfig; result: TestRunResult }> => {
-    const exampleTestPath = path.resolve(__dirname, '../test/examples/example.test.js');
+    const exampleTestPath = path.resolve(__dirname, '../test/examples/example.test.ts');
     const tempFile = path.join(os.tmpdir(), `cascade-test-${config.reporterType}-${Date.now()}.tmp`);
 
     const result = await runTestFile(exampleTestPath, config.reporterType, tempFile);
@@ -44,11 +44,11 @@ export const normalizationConfigs = {
   json: {
     testFile: '[TEST_FILE_PATH]',
     duration: '[DURATION]',
-    'file:///.*?/example\\.test\\.js': '[TEST_FILE_PATH]'
+    'file:///.*?/example\\.test\\.(js|ts)': '[TEST_FILE_PATH]'
   },
   
   junit: {
-    'file:///.*?/example.test.js': '[TEST_FILE_PATH]',
+    'file:///.*?/example\\.test\\.(js|ts)': '[TEST_FILE_PATH]',
     'time="[^"]*"': 'time="[TIMESTAMP]"',
     'timestamp="[^"]*"': 'timestamp="[TIMESTAMP]"'
   },
@@ -60,7 +60,7 @@ export const normalizationConfigs = {
   },
   
   mochaJson: {
-    'file:///.*?/example\\.test\\.js': '[TEST_FILE_PATH]',
+    'file:///.*?/example\\.test\\.(js|ts)': '[TEST_FILE_PATH]',
     'start': '[TIMESTAMP]',
     'end': '[TIMESTAMP]',
     'duration': '[DURATION]'

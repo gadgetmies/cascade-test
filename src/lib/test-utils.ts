@@ -1,6 +1,7 @@
 import { fork, ChildProcess } from "child_process";
 import * as path from "path";
 import * as fs from "fs";
+import { forkExecArgvForScript } from "./fork-ts-script.js";
 
 export interface TestRunResult {
   code: number;
@@ -23,6 +24,7 @@ export const runTestFile = (
 ): Promise<TestRunResult> => {
   return new Promise((resolve, reject) => {
     const child: ChildProcess = fork(testFilePath, [], {
+      execArgv: forkExecArgvForScript(testFilePath),
       env: {
         ...process.env,
         CASCADE_TEST_REPORTER: reporter || "console",

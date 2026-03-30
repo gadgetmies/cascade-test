@@ -204,26 +204,26 @@ Utility function to find files matching a regex pattern recursively.
 The framework includes a command-line runner for executing multiple test files:
 
 ```bash
-# Run all .js files in the test directory
-npx cascade-test test/
+# Run all test modules under the directory (.ts run via tsx; .js run with Node)
+npx cascade-test src/test/
 
-# Run files whose basename stem matches (extensions ignored; .d.ts / .js.map never run)
-npx cascade-test test/ --regex "\.spec$"
+# Run files whose basename matches a regex (only paths ending in .js or .ts are discovered)
+npx cascade-test src/test/ --regex "\.spec\.(js|ts)$"
 
-# Same idea with a shell-style glob (trailing .js/.ts on the pattern is ignored)
-npx cascade-test test/ --glob "*.spec.js"
+# Same idea with a shell-style glob
+npx cascade-test src/test/ --glob "*.spec.js"
 
 # Or install globally
 npm install -g cascade-test
-cascade-test test/
+cascade-test src/test/
 ```
 
 ### CLI Options
 
 #### Test Options
-- `path`: Directory to search for test files (required)
-- `--regex, -r`: Regex matched against each candidate file’s basename **without** `.js` or `.ts` (after discovery). Only files passing the built-in allowlist (ends with `.js`/`.ts`, excludes `.d.ts` and `.js.map`) are candidates. Cannot be used with `--glob`.
-- `--glob, -G`: Shell-style glob (`minimatch`) against the **same stem** as `--regex`; a trailing `.js` or `.ts` on the pattern is stripped before matching. Cannot be used with `--regex`.
+- `path`: Directory to search for test files (required). Use your **source** tree (e.g. `src/test`) or compiled output; discovered `.ts` files are executed with **`tsx`**. Listed files and suite headers use paths **relative to `path`**, including the file extension.
+- `--regex, -r`: Regex matched against each candidate file’s basename (including `.js` or `.ts`). Only files whose paths end with `.js` or `.ts` are candidates. Cannot be used with `--glob`. If no files match, the process exits with code **1**.
+- `--glob, -G`: Shell-style glob (`minimatch`) against each candidate file’s basename. Cannot be used with `--regex`. If no files match, the process exits with code **1**.
 - `--reporter`: Test reporter to use (`console`, `junit`, `tap`, `json`, `mocha-json`)
 - `--output, -o`: Output file for structured reporters
 - `--ci`: CI environment for annotations (`jenkins`, `azure`, `gitlab`, `github`, `console`, `auto`)

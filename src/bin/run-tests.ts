@@ -3,8 +3,8 @@ import * as R from "ramda";
 import {
   recursivelyFindByRegex,
   runnableTestFileAllowlist,
-  filterTestPathsByStemRegex,
-  filterTestPathsByStemGlob,
+  filterTestPathsByBasenameRegex,
+  filterTestPathsByBasenameGlob,
 } from "../lib/file-utils.js";
 import { fork, spawn, ChildProcess } from "child_process";
 import yargsFactory from "yargs/yargs";
@@ -12,7 +12,7 @@ import type { Argv } from "yargs";
 import { hideBin } from "yargs/helpers";
 import {
   assertNoUnknownPositionalArgs,
-  assertStemFilterExclusivity,
+  assertBasenameFilterExclusivity,
   runTestsCliCommandBuilder,
   type RunTestsCliArgv,
 } from "../lib/run-tests-cli-builder.js";
@@ -20,6 +20,7 @@ import * as path from "path";
 import * as fs from "fs";
 import { TestSummary } from "../types.js";
 import { getDisplayTestFile } from "../lib/path-utils.js";
+import { forkExecArgvForScript } from "../lib/fork-ts-script.js";
 import "colors";
 
 interface TestResult {
@@ -49,6 +50,7 @@ const runTest = (
   }
 ): Promise<TestResult> => {
   const child: ChildProcess = fork(test, [], {
+    execArgv: forkExecArgvForScript(test),
     env: {
       ...process.env,
       CASCADE_TEST_REPORTER: config.reporter || "console",
@@ -127,13 +129,13 @@ const processCoverage = (coverageOptions: CoverageOptions): Promise<void> => {
   });
 };
 
-type StemFilter =
+type BasenameFilter =
   | { kind: "regex"; re: RegExp }
   | { kind: "glob"; pattern: string };
 
 const main = async (
   testPath: string,
-  stemFilter: StemFilter | undefined,
+  basenameFilter: BasenameFilter | undefined,
   config: { reporter?: string; outputFile?: string; ci?: string; coverage?: CoverageOptions } = {}
 ): Promise<void> => {
   const resolvedTestPath = path.resolve(`${process.cwd()}/${testPath}`);
@@ -142,11 +144,18 @@ const main = async (
     runnableTestFileAllowlist
   );
   const testFiles =
-    stemFilter === undefined
+    basenameFilter === undefined
       ? candidates
-      : stemFilter.kind === "regex"
-        ? filterTestPathsByStemRegex(candidates, stemFilter.re)
-        : filterTestPathsByStemGlob(candidates, stemFilter.pattern);
+      : basenameFilter.kind === "regex"
+        ? filterTestPathsByBasenameRegex(candidates, basenameFilter.re)
+        : filterTestPathsByBasenameGlob(candidates, basenameFilter.pattern);
+
+  if (basenameFilter !== undefined && testFiles.length === 0) {
+    console.error(
+      "No test files matched the given --regex / --glob filter.".red
+    );
+    process.exit(1);
+  }
 
   const exitStatuses: TestResult[] = [];
   const allTestSummaries: TestSummary[] = [];
@@ -290,7 +299,7 @@ cli
     (argv: RunTestsCliArgv) => {
       try {
         assertNoUnknownPositionalArgs(argv);
-        assertStemFilterExclusivity(argv);
+        assertBasenameFilterExclusivity(argv);
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
         console.error(msg);
@@ -308,14 +317,14 @@ cli
           }
         : undefined;
 
-      let stemFilter: StemFilter | undefined;
+      let basenameFilter: BasenameFilter | undefined;
       if (argv.regex !== undefined) {
-        stemFilter = { kind: "regex", re: new RegExp(argv.regex) };
+        basenameFilter = { kind: "regex", re: new RegExp(argv.regex) };
       } else if (argv.glob !== undefined) {
-        stemFilter = { kind: "glob", pattern: argv.glob };
+        basenameFilter = { kind: "glob", pattern: argv.glob };
       }
 
-      return main(argv.path, stemFilter, {
+      return main(argv.path, basenameFilter, {
         reporter: argv.reporter as any,
         outputFile: argv.output,
         ci: argv.ci === "auto" ? undefined : (argv.ci as any),

@@ -27,7 +27,7 @@ export function assertNoUnknownPositionalArgs(argv: {
   }
 }
 
-export function assertStemFilterExclusivity(argv: {
+export function assertBasenameFilterExclusivity(argv: {
   regex?: string;
   glob?: string;
 }): void {
@@ -45,13 +45,13 @@ export function runTestsCliCommandBuilder(y: Argv<Record<string, unknown>>): Arg
     })
     .option("regex", {
       description:
-        "Regex matched against each file basename with .js/.ts stripped (e.g. dist/foo.test.js uses stem foo.test). Discovery still excludes .d.ts and .js.map. Incompatible with --glob.",
+        "Regex matched against each discovered file's basename (including .js or .ts). Incompatible with --glob.",
       alias: "r",
       type: "string",
     })
     .option("glob", {
       description:
-        "Shell-style glob matched against the same basename stem as --regex; a trailing .js/.ts/.d.ts on the pattern is ignored. Incompatible with --regex.",
+        "Shell-style glob (minimatch) against each file basename. Incompatible with --regex.",
       alias: "G",
       type: "string",
     })
@@ -123,6 +123,6 @@ export function parseRunTestsCliArgs(argv: string[]): RunTestsCliArgv {
     .parseSync();
 
   assertNoUnknownPositionalArgs(parsed);
-  assertStemFilterExclusivity(parsed as Pick<RunTestsCliArgv, "regex" | "glob">);
+  assertBasenameFilterExclusivity(parsed as Pick<RunTestsCliArgv, "regex" | "glob">);
   return parsed as RunTestsCliArgv;
 }

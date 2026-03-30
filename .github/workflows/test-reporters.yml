@@ -26,12 +26,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run build
-
       - name: Run tests (junit)
         continue-on-error: true
-        run: node dist/bin/run-tests.js dist/test/examples --reporter=junit --output=test-results.xml --ci=github
+        run: npx tsx src/bin/run-tests.ts src/test/examples --reporter=junit --output=test-results.xml --ci=github
 
       - name: Upload JUnit XML artifact
         if: ${{ !cancelled() }}
@@ -53,7 +50,7 @@ jobs:
       
       - name: Run tests (mocha-json)
         continue-on-error: true
-        run: node dist/bin/run-tests.js dist/test/examples --reporter=mocha-json --output=mocha-results.json --ci=github
+        run: npx tsx src/bin/run-tests.ts src/test/examples --reporter=mocha-json --output=mocha-results.json --ci=github
 
       - name: Upload Mocha JSON artifact
         if: ${{ !cancelled() }}

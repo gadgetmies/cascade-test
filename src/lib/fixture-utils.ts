@@ -90,15 +90,6 @@ function deepEqual(a: any, b: any, normalize?: (data: any) => any): { equal: boo
   return { equal: false, diff: diffResult || "Values are different but no diff available" };
 }
 
-function mapCompiledToSource(compiledPath: string): string {
-  // If we're in a dist directory, map it back to the src directory
-  if (compiledPath.includes('/dist/')) {
-    // Handle both .js files and .js:line:column patterns
-    return compiledPath.replace('/dist/', '/src/').replace(/\.js(:\d+:\d+)?$/, '.ts$1');
-  }
-  return compiledPath;
-}
-
 function getCallerFile(): string {
   const stack = new Error().stack;
   if (!stack) {
@@ -123,8 +114,7 @@ function getCallerFile(): string {
           resolvedPath = path.resolve(filePath);
         }
         
-        // Map compiled path back to source path
-        return mapCompiledToSource(resolvedPath);
+        return resolvedPath;
       }
     }
   }
@@ -281,7 +271,7 @@ export function readFixture(
  * // Normalize paths in string values using regex
  * const result = await assertFixture('output.json', data, normalizeConfig({
  *   testFile: '[TEST_FILE_PATH]',
- *   'file:///.*?/example\\.test\\.js': '[TEST_FILE_PATH]'
+ *   'file:///.*?/example\\.test\\.(js|ts)': '[TEST_FILE_PATH]'
  * }));
  * ```
  */

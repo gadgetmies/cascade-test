@@ -23,7 +23,7 @@ test({
 
   'Framework Tests': {
     'should run example.test.ts and get expected results': async (): Promise<void> => {
-      const exampleTestPath = path.resolve(__dirname, '../examples/example.test.js');
+      const exampleTestPath = path.resolve(__dirname, '../examples/example.test.ts');
       
       if (!fs.existsSync(exampleTestPath)) {
         throw new Error(`Test file not found: ${exampleTestPath}`);
@@ -69,7 +69,7 @@ test({
     },
 
     'should validate specific test outputs': async (): Promise<void> => {
-      const exampleTestPath = path.resolve(__dirname, '../examples/example.test.js');
+      const exampleTestPath = path.resolve(__dirname, '../examples/example.test.ts');
       
       if (!fs.existsSync(exampleTestPath)) {
         throw new Error(`Test file not found: ${exampleTestPath}`);
@@ -101,7 +101,7 @@ test({
 
     'Test Execution Output': {
       setup: async (): Promise<TestContext> => {
-        const exampleTestPath = path.resolve(__dirname, '../examples/example.test.js');
+        const exampleTestPath = path.resolve(__dirname, '../examples/example.test.ts');
         
         if (!fs.existsSync(exampleTestPath)) {
           throw new Error(`Test file not found: ${exampleTestPath}`);

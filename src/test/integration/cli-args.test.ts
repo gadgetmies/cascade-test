@@ -12,44 +12,44 @@ test({
     },
 
     'parses path as first positional': (): void => {
-      const argv = parseRunTestsCliArgs(['dist/test/integration']);
-      expect(argv.path).to.equal('dist/test/integration');
+      const argv = parseRunTestsCliArgs(['src/test/integration']);
+      expect(argv.path).to.equal('src/test/integration');
     },
 
     'accepts --regex': (): void => {
       const argv = parseRunTestsCliArgs([
-        'dist/test',
+        'src/test',
         '--regex',
         'reporter-',
       ]);
-      expect(argv.path).to.equal('dist/test');
+      expect(argv.path).to.equal('src/test');
       expect(argv.regex).to.equal('reporter-');
     },
 
     'accepts -r as alias for --regex': (): void => {
-      const argv = parseRunTestsCliArgs(['dist/test', '-r', '\\.test\\.ts$']);
+      const argv = parseRunTestsCliArgs(['src/test', '-r', '\\.test\\.ts$']);
       expect(argv.regex).to.equal('\\.test\\.ts$');
     },
 
     'accepts --glob': (): void => {
       const argv = parseRunTestsCliArgs([
-        'dist/test',
+        'src/test',
         '--glob',
         '*.test.js',
       ]);
-      expect(argv.path).to.equal('dist/test');
+      expect(argv.path).to.equal('src/test');
       expect(argv.glob).to.equal('*.test.js');
     },
 
     'accepts -G as alias for --glob': (): void => {
-      const argv = parseRunTestsCliArgs(['dist/test', '-G', 'reporter-*']);
+      const argv = parseRunTestsCliArgs(['src/test', '-G', 'reporter-*']);
       expect(argv.glob).to.equal('reporter-*');
     },
 
     'rejects --regex and --glob together': (): void => {
       expect(() =>
         parseRunTestsCliArgs([
-          'dist/test',
+          'src/test',
           '--regex',
           'a',
           '--glob',
@@ -59,14 +59,14 @@ test({
     },
 
     'applies defaults for reporter and ci': (): void => {
-      const argv = parseRunTestsCliArgs(['dist/test']);
+      const argv = parseRunTestsCliArgs(['src/test']);
       expect(argv.reporter).to.equal('console');
       expect(argv.ci).to.equal('auto');
     },
 
     'parses --reporter and --output': (): void => {
       const argv = parseRunTestsCliArgs([
-        'dist/test/examples',
+        'src/test/examples',
         '--reporter=junit',
         '--output=out.xml',
       ]);
@@ -76,7 +76,7 @@ test({
 
     'accepts -o as alias for --output': (): void => {
       const argv = parseRunTestsCliArgs([
-        'dist/test',
+        'src/test',
         '-o',
         'results.json',
         '--reporter=json',
@@ -85,37 +85,37 @@ test({
     },
 
     'parses --ci': (): void => {
-      const argv = parseRunTestsCliArgs(['dist/test', '--ci=github']);
+      const argv = parseRunTestsCliArgs(['src/test', '--ci=github']);
       expect(argv.ci).to.equal('github');
     },
 
     'rejects unknown options in strict mode': (): void => {
       expect(() =>
-        parseRunTestsCliArgs(['dist/test', '--not-a-real-flag'])
+        parseRunTestsCliArgs(['src/test', '--not-a-real-flag'])
       ).to.throw();
     },
 
     'rejects extra arguments after --': (): void => {
       expect(() =>
-        parseRunTestsCliArgs(['dist/test', '--', '--extra'])
+        parseRunTestsCliArgs(['src/test', '--', '--extra'])
       ).to.throw('Unknown argument(s): --extra');
     },
 
     'rejects invalid reporter': (): void => {
       expect(() =>
-        parseRunTestsCliArgs(['dist/test', '--reporter=verbose'])
+        parseRunTestsCliArgs(['src/test', '--reporter=verbose'])
       ).to.throw();
     },
 
     'rejects invalid ci value': (): void => {
       expect(() =>
-        parseRunTestsCliArgs(['dist/test', '--ci=circleci'])
+        parseRunTestsCliArgs(['src/test', '--ci=circleci'])
       ).to.throw();
     },
 
     'parses coverage flags': (): void => {
       const argv = parseRunTestsCliArgs([
-        'dist/test',
+        'src/test',
         '--coverage',
         '--coverage-dir=tmp/cov',
         '--coverage-reporter',
@@ -139,7 +139,7 @@ test({
     },
 
     'defaults coverage-related options when coverage is off': (): void => {
-      const argv = parseRunTestsCliArgs(['dist/test']);
+      const argv = parseRunTestsCliArgs(['src/test']);
       expect(argv.coverage).to.equal(false);
       expect(argv.coverageDir).to.equal('coverage');
       expect(argv.coverageReporter).to.deep.equal(['text', 'html']);
