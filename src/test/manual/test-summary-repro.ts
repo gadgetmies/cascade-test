@@ -17,7 +17,7 @@ test({
     'Skipped Suite': {
       skip: () => ({ reason: 'Intentional Skip', until: '2030-01-01' }),
       'should skip': () => {
-        // Skipped
+        throw new Error('This test should fail because it is skipped');
       }
     }
   }
