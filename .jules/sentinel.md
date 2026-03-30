@@ -1,0 +1,4 @@
+## 2026-03-15 - Path Traversal in Fixture Utilities
+**Vulnerability:** The `fixture-utils.ts` (specifically `readFixture`, `createFixture`, and `assertFixture`) were vulnerable to path traversal. A malicious test or an attacker-controlled test input could specify a `fixtureName` like `../../../etc/passwd` to read or write files outside the intended `fixtures` directory.
+**Learning:** Using `path.join` with user-supplied (or test-supplied) relative paths is dangerous if not validated. `path.resolve` followed by a check with `path.relative` is a robust way to ensure the resolved path remains within a designated boundary.
+**Prevention:** Always validate that resolved file paths remain within the expected base directory by using `path.relative(base, resolved)` and checking if the result starts with `..`. Also, explicitly block absolute paths if only relative names within a folder are expected.
