@@ -1,10 +1,21 @@
 #!/usr/bin/env node
 import * as R from "ramda";
-import { recursivelyFindByRegex } from "../lib/file-utils.js";
+import {
+  recursivelyFindByRegex,
+  runnableTestFileAllowlist,
+  filterTestPathsByStemRegex,
+  filterTestPathsByStemGlob,
+} from "../lib/file-utils.js";
 import { fork, spawn, ChildProcess } from "child_process";
 import yargsFactory from "yargs/yargs";
-import type { Argv, ArgumentsCamelCase } from "yargs";
+import type { Argv } from "yargs";
 import { hideBin } from "yargs/helpers";
+import {
+  assertNoUnknownPositionalArgs,
+  assertStemFilterExclusivity,
+  runTestsCliCommandBuilder,
+  type RunTestsCliArgv,
+} from "../lib/run-tests-cli-builder.js";
 import * as path from "path";
 import * as fs from "fs";
 import { TestSummary } from "../types.js";
@@ -116,16 +127,26 @@ const processCoverage = (coverageOptions: CoverageOptions): Promise<void> => {
   });
 };
 
-const jsAndTsIgnoringTypeDefinitionsAndMappingFiles =
-  /^(?!.*\.(d\.ts|js\.map)$).*\.(js|ts)$/;
+type StemFilter =
+  | { kind: "regex"; re: RegExp }
+  | { kind: "glob"; pattern: string };
 
 const main = async (
   testPath: string,
-  regex: RegExp = jsAndTsIgnoringTypeDefinitionsAndMappingFiles,
+  stemFilter: StemFilter | undefined,
   config: { reporter?: string; outputFile?: string; ci?: string; coverage?: CoverageOptions } = {}
 ): Promise<void> => {
   const resolvedTestPath = path.resolve(`${process.cwd()}/${testPath}`);
-  const testFiles = recursivelyFindByRegex(resolvedTestPath, regex);
+  const candidates = recursivelyFindByRegex(
+    resolvedTestPath,
+    runnableTestFileAllowlist
+  );
+  const testFiles =
+    stemFilter === undefined
+      ? candidates
+      : stemFilter.kind === "regex"
+        ? filterTestPathsByStemRegex(candidates, stemFilter.re)
+        : filterTestPathsByStemGlob(candidates, stemFilter.pattern);
 
   const exitStatuses: TestResult[] = [];
   const allTestSummaries: TestSummary[] = [];
@@ -262,100 +283,19 @@ const cli = yargsFactory(hideBin(process.argv)) as Argv;
 
 cli
   .usage("Usage: $0 <path> [options]")
-  .command<{
-    path: string;
-    regex?: string;
-    reporter?: string;
-    output?: string;
-    ci?: string;
-    coverage?: boolean;
-    coverageDir?: string;
-    coverageReporter?: string[];
-    coverageExclude?: string[];
-    coverageInclude?: string[];
-    coverageAll?: boolean;
-    coverageSkipFull?: boolean;
-  }>(
+  .command<RunTestsCliArgv>(
     "$0 <path>",
     "Runs tests in path filtered by regex if given",
-    (y: Argv<{}>) =>
-      y
-        .positional("path", {
-          description: "Path to test files. Searched recursively.",
-          type: "string",
-          demandOption: true,
-        })
-        .option("regex", {
-          description: "Regex to filter files with",
-          alias: "r",
-          type: "string",
-        })
-        .option("reporter", {
-          description: "Test reporter to use",
-          type: "string",
-          choices: ["console", "junit", "tap", "json", "mocha-json"],
-          default: "console",
-        })
-        .option("output", {
-          description: "Output file for structured reporters",
-          alias: "o",
-          type: "string",
-        })
-        .option("ci", {
-          description: "CI environment for annotations",
-          type: "string",
-          choices: ["jenkins", "azure", "gitlab", "github", "console", "auto"],
-          default: "auto",
-        })
-        .option("coverage", {
-          description: "Enable code coverage collection",
-          type: "boolean",
-          default: false,
-        })
-        .option("coverage-dir", {
-          description: "Directory for coverage output",
-          type: "string",
-          default: "coverage",
-        })
-        .option("coverage-reporter", {
-          description: "Coverage reporters to use",
-          type: "array",
-          default: ["text", "html"],
-        })
-        .option("coverage-exclude", {
-          description: "Patterns to exclude from coverage",
-          type: "array",
-        })
-        .option("coverage-include", {
-          description: "Patterns to include in coverage",
-          type: "array",
-        })
-        .option("coverage-all", {
-          description: "Include all files in coverage (even uncovered)",
-          type: "boolean",
-          default: false,
-        })
-        .option("coverage-skip-full", {
-          description: "Skip files with 100% coverage in reports",
-          type: "boolean",
-          default: false,
-        }),
-    async (
-      argv: ArgumentsCamelCase<{
-        path: string;
-        regex?: string;
-        reporter?: string;
-        output?: string;
-        ci?: string;
-        coverage?: boolean;
-        coverageDir?: string;
-        coverageReporter?: string[];
-        coverageExclude?: string[];
-        coverageInclude?: string[];
-        coverageAll?: boolean;
-        coverageSkipFull?: boolean;
-      }>
-    ) => {
+    runTestsCliCommandBuilder,
+    (argv: RunTestsCliArgv) => {
+      try {
+        assertNoUnknownPositionalArgs(argv);
+        assertStemFilterExclusivity(argv);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        console.error(msg);
+        process.exit(1);
+      }
       const coverageConfig: CoverageOptions | undefined = argv.coverage
         ? {
             enabled: true,
@@ -368,16 +308,19 @@ cli
           }
         : undefined;
 
-      return await main(
-        argv.path,
-        argv.regex ? new RegExp(argv.regex) : undefined,
-        {
-          reporter: argv.reporter as any,
-          outputFile: argv.output,
-          ci: argv.ci === "auto" ? undefined : (argv.ci as any),
-          coverage: coverageConfig,
-        }
-      );
+      let stemFilter: StemFilter | undefined;
+      if (argv.regex !== undefined) {
+        stemFilter = { kind: "regex", re: new RegExp(argv.regex) };
+      } else if (argv.glob !== undefined) {
+        stemFilter = { kind: "glob", pattern: argv.glob };
+      }
+
+      return main(argv.path, stemFilter, {
+        reporter: argv.reporter as any,
+        outputFile: argv.output,
+        ci: argv.ci === "auto" ? undefined : (argv.ci as any),
+        coverage: coverageConfig,
+      });
     }
   )
   .strict()

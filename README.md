@@ -207,8 +207,11 @@ The framework includes a command-line runner for executing multiple test files:
 # Run all .js files in the test directory
 npx cascade-test test/
 
-# Run with custom regex pattern
-npx cascade-test test/ --regex "\.spec\.js$"
+# Run files whose basename stem matches (extensions ignored; .d.ts / .js.map never run)
+npx cascade-test test/ --regex "\.spec$"
+
+# Same idea with a shell-style glob (trailing .js/.ts on the pattern is ignored)
+npx cascade-test test/ --glob "*.spec.js"
 
 # Or install globally
 npm install -g cascade-test
@@ -219,7 +222,8 @@ cascade-test test/
 
 #### Test Options
 - `path`: Directory to search for test files (required)
-- `--regex, -r`: Regex pattern to filter files (default: `/\.(js|ts)$/`)
+- `--regex, -r`: Regex matched against each candidate file’s basename **without** `.js` or `.ts` (after discovery). Only files passing the built-in allowlist (ends with `.js`/`.ts`, excludes `.d.ts` and `.js.map`) are candidates. Cannot be used with `--glob`.
+- `--glob, -G`: Shell-style glob (`minimatch`) against the **same stem** as `--regex`; a trailing `.js` or `.ts` on the pattern is stripped before matching. Cannot be used with `--regex`.
 - `--reporter`: Test reporter to use (`console`, `junit`, `tap`, `json`, `mocha-json`)
 - `--output, -o`: Output file for structured reporters
 - `--ci`: CI environment for annotations (`jenkins`, `azure`, `gitlab`, `github`, `console`, `auto`)
