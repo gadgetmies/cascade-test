@@ -166,6 +166,11 @@ const main = async (
     console.log(`Coverage reporters: ${config.coverage.reporter.join(", ")}`.yellow);
     
     if (fs.existsSync(config.coverage.directory)) {
+      const resolvedCoverageDir = path.resolve(config.coverage.directory);
+      const relative = path.relative(process.cwd(), resolvedCoverageDir);
+      if (relative.startsWith("..") || path.isAbsolute(relative)) {
+        throw new Error("Security Error: Coverage directory must be within the current working directory");
+      }
       fs.rmSync(config.coverage.directory, { recursive: true, force: true });
     }
     fs.mkdirSync(config.coverage.directory, { recursive: true });
