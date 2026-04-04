@@ -165,10 +165,18 @@ const main = async (
     console.log(`Coverage directory: ${config.coverage.directory}`.yellow);
     console.log(`Coverage reporters: ${config.coverage.reporter.join(", ")}`.yellow);
     
-    if (fs.existsSync(config.coverage.directory)) {
-      fs.rmSync(config.coverage.directory, { recursive: true, force: true });
+    const resolvedCoverageDir = path.resolve(config.coverage.directory);
+    const relativePath = path.relative(process.cwd(), resolvedCoverageDir);
+    const isInsideCwd = relativePath && !relativePath.startsWith('..') && !path.isAbsolute(relativePath);
+
+    if (!isInsideCwd) {
+      throw new Error(`Security Error: Coverage directory must be a subdirectory of the current working directory. Got: ${config.coverage.directory}`);
     }
-    fs.mkdirSync(config.coverage.directory, { recursive: true });
+
+    if (fs.existsSync(resolvedCoverageDir)) {
+      fs.rmSync(resolvedCoverageDir, { recursive: true, force: true });
+    }
+    fs.mkdirSync(resolvedCoverageDir, { recursive: true });
   }
 
   console.log("Found test files matching criteria:\n");
