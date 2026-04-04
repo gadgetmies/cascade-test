@@ -20,9 +20,11 @@ test({
 
   try {
     // Run the test runner with a coverage-dir pointing to our temp directory
-    // We use the compiled JS for the test
-    const result = spawnSync('node', [
-      'dist/bin/run-tests.js',
+    // We use npx tsx to run the source directly, ensuring the latest code is tested
+    // and maintaining independence from build artifacts in CI.
+    const result = spawnSync('npx', [
+      'tsx',
+      'src/bin/run-tests.ts',
       'src/test/examples',
       '--coverage',
       '--coverage-dir',
