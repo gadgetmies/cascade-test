@@ -24,18 +24,35 @@ export function filterTestPathsByBasenameGlob(
 }
 
 const recursivelyFindByRegex = (
-  base: string, 
-  regex: RegExp, 
-  files?: string[], 
+  base: string,
+  regex: RegExp,
+  files?: string[],
   result?: string[]
 ): string[] => {
+  // If base is a file, check if it matches the regex
+  if (fs.existsSync(base) && !fs.statSync(base).isDirectory()) {
+    if (path.basename(base).match(regex)) {
+      return [base];
+    }
+    return [];
+  }
+
+  if (!fs.existsSync(base)) {
+    return [];
+  }
+
   files = files || fs.readdirSync(base);
   result = result || [];
 
   files.forEach((file: string) => {
     const newbase = path.join(base, file);
     if (fs.statSync(newbase).isDirectory()) {
-      result = recursivelyFindByRegex(newbase, regex, fs.readdirSync(newbase), result);
+      result = recursivelyFindByRegex(
+        newbase,
+        regex,
+        fs.readdirSync(newbase),
+        result
+      );
     } else {
       if (file.match(regex)) {
         result!.push(newbase);
