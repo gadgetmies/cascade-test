@@ -164,11 +164,26 @@ const main = async (
     console.log("\nCode coverage enabled".green);
     console.log(`Coverage directory: ${config.coverage.directory}`.yellow);
     console.log(`Coverage reporters: ${config.coverage.reporter.join(", ")}`.yellow);
-    
-    if (fs.existsSync(config.coverage.directory)) {
-      fs.rmSync(config.coverage.directory, { recursive: true, force: true });
+
+    const resolvedPath = path.resolve(config.coverage.directory);
+    const relativePath = path.relative(process.cwd(), resolvedPath);
+
+    if (
+      relativePath.startsWith("..") ||
+      path.isAbsolute(relativePath) ||
+      relativePath === ""
+    ) {
+      console.error(
+        `\nSecurity Error: Coverage directory must be within the current working directory and cannot be the root: ${config.coverage.directory}`
+          .red
+      );
+      process.exit(1);
     }
-    fs.mkdirSync(config.coverage.directory, { recursive: true });
+
+    if (fs.existsSync(resolvedPath)) {
+      fs.rmSync(resolvedPath, { recursive: true, force: true });
+    }
+    fs.mkdirSync(resolvedPath, { recursive: true });
   }
 
   console.log("Found test files matching criteria:\n");

@@ -1,0 +1,4 @@
+## 2026-03-15 - [CRITICAL] Arbitrary Directory Deletion via Coverage Directory
+**Vulnerability:** The test runner CLI allowed users to specify a coverage directory via `--coverage-dir`. It would then execute `fs.rmSync(directory, { recursive: true, force: true })` on that directory without any validation. This allowed an attacker (or a misconfigured CI) to delete any directory the process had permissions for, including directories outside the workspace or the workspace root itself, by using path traversal (e.g., `../../etc`).
+**Learning:** `path.join` or even `path.resolve` does not prevent directory traversal. Always validate that resolved paths intended for destructive operations remain within a safe boundary (the workspace) and are not the boundary itself.
+**Prevention:** Use `path.relative(process.cwd(), resolvedPath)` and check if it starts with `..`, is absolute, or is empty to ensure the target is a subdirectory of the current working directory.
