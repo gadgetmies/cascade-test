@@ -122,19 +122,20 @@ export class JUnitReporter implements TestReporter {
     const time = this.results.reduce((sum, r) => sum + (r.duration || 0), 0) / 1000;
 
     const testCases = this.results.map(result => {
-      const testName = result.path.slice(1).join('.');
+      const testName = this.escapeXml(result.path.slice(1).join('.'));
       const relativeTestFile = toRelativePath(this.testFile);
-      const className = path.basename(relativeTestFile, path.extname(relativeTestFile));
+      const className = this.escapeXml(path.basename(relativeTestFile, path.extname(relativeTestFile)));
+      const duration = (result.duration || 0) / 1000;
       
       if (result.status === 'passed') {
-        return `    <testcase name="${testName}" classname="${className}" time="${result.duration || 0 / 1000}"/>`;
+        return `    <testcase name="${testName}" classname="${className}" time="${duration}"/>`;
       } else if (result.status === 'skipped') {
         const skipMessage = result.error ? this.escapeXml(result.error) : 'Test skipped';
-        return `    <testcase name="${testName}" classname="${className}" time="${result.duration || 0 / 1000}">
+        return `    <testcase name="${testName}" classname="${className}" time="${duration}">
       <skipped message="${skipMessage}"/>
     </testcase>`;
       } else {
-        return `    <testcase name="${testName}" classname="${className}" time="${result.duration || 0 / 1000}">
+        return `    <testcase name="${testName}" classname="${className}" time="${duration}">
       <failure message="${this.escapeXml(result.error || 'Test failed')}"/>
     </testcase>`;
       }

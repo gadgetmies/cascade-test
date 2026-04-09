@@ -164,6 +164,22 @@ const main = async (
     console.log("\nCode coverage enabled".green);
     console.log(`Coverage directory: ${config.coverage.directory}`.yellow);
     console.log(`Coverage reporters: ${config.coverage.reporter.join(", ")}`.yellow);
+
+    // Security check: ensure coverage directory is within CWD and not CWD itself
+    const resolvedPath = path.resolve(config.coverage.directory);
+    const relativePath = path.relative(process.cwd(), resolvedPath);
+    const isSafe =
+      !relativePath.startsWith("..") &&
+      !path.isAbsolute(relativePath) &&
+      relativePath !== "";
+
+    if (!isSafe) {
+      console.error(
+        `\nSecurity Error: Coverage directory ${config.coverage.directory} must be a subdirectory within the current working directory.`
+          .red
+      );
+      process.exit(1);
+    }
     
     if (fs.existsSync(config.coverage.directory)) {
       fs.rmSync(config.coverage.directory, { recursive: true, force: true });
