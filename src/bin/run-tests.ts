@@ -305,17 +305,45 @@ cli
         console.error(msg);
         process.exit(1);
       }
-      const coverageConfig: CoverageOptions | undefined = argv.coverage
-        ? {
-            enabled: true,
-            reporter: argv.coverageReporter as string[] || ["text", "html"],
-            directory: argv.coverageDir || "coverage",
-            exclude: argv.coverageExclude as string[] | undefined,
-            include: argv.coverageInclude as string[] | undefined,
-            all: argv.coverageAll,
-            skipFull: argv.coverageSkipFull,
-          }
-        : undefined;
+      let coverageConfig: CoverageOptions | undefined;
+      if (argv.coverage) {
+        const resolvedCoverageDir = path.resolve(
+          process.cwd(),
+          argv.coverageDir || "coverage"
+        );
+        const relativeCoveragePath = path.relative(
+          process.cwd(),
+          resolvedCoverageDir
+        );
+
+        if (
+          relativeCoveragePath === ".." ||
+          relativeCoveragePath.startsWith(`..${path.sep}`) ||
+          path.isAbsolute(relativeCoveragePath) ||
+          relativeCoveragePath === ""
+        ) {
+          console.error(
+            `\nError: Invalid coverage directory: ${
+              argv.coverageDir || "coverage"
+            }`.red
+          );
+          console.error(
+            "The coverage directory must be a subdirectory of the current working directory and cannot be the working directory itself."
+              .red
+          );
+          process.exit(1);
+        }
+
+        coverageConfig = {
+          enabled: true,
+          reporter: (argv.coverageReporter as string[]) || ["text", "html"],
+          directory: resolvedCoverageDir,
+          exclude: argv.coverageExclude as string[] | undefined,
+          include: argv.coverageInclude as string[] | undefined,
+          all: argv.coverageAll,
+          skipFull: argv.coverageSkipFull,
+        };
+      }
 
       let basenameFilter: BasenameFilter | undefined;
       if (argv.regex !== undefined) {
