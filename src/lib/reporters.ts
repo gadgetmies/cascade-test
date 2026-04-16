@@ -121,28 +121,30 @@ export class JUnitReporter implements TestReporter {
     const errors = 0;
     const time = this.results.reduce((sum, r) => sum + (r.duration || 0), 0) / 1000;
 
+    const relativeTestFile = toRelativePath(this.testFile);
+    const className = this.escapeXml(path.basename(relativeTestFile, path.extname(relativeTestFile)));
+    const suiteName = this.escapeXml(path.basename(relativeTestFile));
+
     const testCases = this.results.map(result => {
-      const testName = result.path.slice(1).join('.');
-      const relativeTestFile = toRelativePath(this.testFile);
-      const className = path.basename(relativeTestFile, path.extname(relativeTestFile));
+      const testName = this.escapeXml(result.path.slice(1).join('.'));
+      const duration = (result.duration || 0) / 1000;
       
       if (result.status === 'passed') {
-        return `    <testcase name="${testName}" classname="${className}" time="${result.duration || 0 / 1000}"/>`;
+        return `    <testcase name="${testName}" classname="${className}" time="${duration}"/>`;
       } else if (result.status === 'skipped') {
         const skipMessage = result.error ? this.escapeXml(result.error) : 'Test skipped';
-        return `    <testcase name="${testName}" classname="${className}" time="${result.duration || 0 / 1000}">
+        return `    <testcase name="${testName}" classname="${className}" time="${duration}">
       <skipped message="${skipMessage}"/>
     </testcase>`;
       } else {
-        return `    <testcase name="${testName}" classname="${className}" time="${result.duration || 0 / 1000}">
+        return `    <testcase name="${testName}" classname="${className}" time="${duration}">
       <failure message="${this.escapeXml(result.error || 'Test failed')}"/>
     </testcase>`;
       }
     }).join('\n');
 
-    const relativeTestFile = toRelativePath(this.testFile);
     return `<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="${path.basename(relativeTestFile)}" tests="${totalTests}" failures="${failures}" errors="${errors}" skipped="${skipped}" time="${time}">
+<testsuite name="${suiteName}" tests="${totalTests}" failures="${failures}" errors="${errors}" skipped="${skipped}" time="${time}">
 ${testCases}
 </testsuite>`;
   }
@@ -178,14 +180,25 @@ export class TAPReporter implements TestReporter {
   generateOutput(): string {
     const totalTests = this.results.length;
     const testLines = this.results.map((result, index) => {
-      const testName = result.path.slice(1).join(' ');
+      // Ensure test name is on a single line to maintain TAP format integrity
+      const testName = result.path.slice(1).join(' ').replace(/\r?\n/g, ' ');
+
       if (result.status === 'passed') {
         return `ok ${index + 1} - ${testName}`;
       } else {
+        const errorMsg = result.error || 'Test failed';
+        // Indent error message for YAML block and use '...' as the proper end marker.
+        // Also sanitize '...' within the message to prevent premature block termination.
+        const indentedError = errorMsg
+          .split('\n')
+          .map(line => `    ${line.replace(/^\s*\.\.\./, '  .. .')}`)
+          .join('\n');
+
         return `not ok ${index + 1} - ${testName}
   ---
-  message: ${result.error || 'Test failed'}
-  ---`;
+  message: |
+${indentedError}
+  ...`;
       }
     }).join('\n');
 
