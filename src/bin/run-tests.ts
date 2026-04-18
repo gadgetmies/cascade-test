@@ -305,17 +305,37 @@ cli
         console.error(msg);
         process.exit(1);
       }
-      const coverageConfig: CoverageOptions | undefined = argv.coverage
-        ? {
-            enabled: true,
-            reporter: argv.coverageReporter as string[] || ["text", "html"],
-            directory: argv.coverageDir || "coverage",
-            exclude: argv.coverageExclude as string[] | undefined,
-            include: argv.coverageInclude as string[] | undefined,
-            all: argv.coverageAll,
-            skipFull: argv.coverageSkipFull,
-          }
-        : undefined;
+      let coverageConfig: CoverageOptions | undefined = undefined;
+      if (argv.coverage) {
+        const coverageDir = argv.coverageDir || "coverage";
+        const resolvedPath = path.resolve(coverageDir);
+        const relativePath = path.relative(process.cwd(), resolvedPath);
+
+        // Security check: ensure coverage directory is a safe subdirectory of CWD
+        // and NOT the CWD itself (to prevent deleting the whole project)
+        if (
+          relativePath === ".." ||
+          relativePath.startsWith(".." + path.sep) ||
+          path.isAbsolute(relativePath) ||
+          relativePath === ""
+        ) {
+          console.error(
+            `Security Error: Coverage directory "${coverageDir}" is invalid. It must be a subdirectory of the current workspace and cannot be the workspace root.`
+              .red
+          );
+          process.exit(1);
+        }
+
+        coverageConfig = {
+          enabled: true,
+          reporter: (argv.coverageReporter as string[]) || ["text", "html"],
+          directory: resolvedPath,
+          exclude: argv.coverageExclude as string[] | undefined,
+          include: argv.coverageInclude as string[] | undefined,
+          all: argv.coverageAll,
+          skipFull: argv.coverageSkipFull,
+        };
+      }
 
       let basenameFilter: BasenameFilter | undefined;
       if (argv.regex !== undefined) {
