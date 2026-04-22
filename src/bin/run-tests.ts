@@ -305,17 +305,35 @@ cli
         console.error(msg);
         process.exit(1);
       }
-      const coverageConfig: CoverageOptions | undefined = argv.coverage
-        ? {
-            enabled: true,
-            reporter: argv.coverageReporter as string[] || ["text", "html"],
-            directory: argv.coverageDir || "coverage",
-            exclude: argv.coverageExclude as string[] | undefined,
-            include: argv.coverageInclude as string[] | undefined,
-            all: argv.coverageAll,
-            skipFull: argv.coverageSkipFull,
-          }
-        : undefined;
+      let coverageConfig: CoverageOptions | undefined;
+      if (argv.coverage) {
+        const coverageDir = argv.coverageDir || "coverage";
+        const resolvedCoverageDir = path.resolve(coverageDir);
+        const relativeCoverageDir = path.relative(process.cwd(), resolvedCoverageDir);
+
+        if (
+          relativeCoverageDir === ".." ||
+          relativeCoverageDir.startsWith(".." + path.sep) ||
+          path.isAbsolute(relativeCoverageDir) ||
+          relativeCoverageDir === ""
+        ) {
+          console.error(
+            `Error: Invalid coverage directory "${coverageDir}". It must be a subdirectory of the current working directory and cannot be the current working directory itself.`
+              .red
+          );
+          process.exit(1);
+        }
+
+        coverageConfig = {
+          enabled: true,
+          reporter: (argv.coverageReporter as string[]) || ["text", "html"],
+          directory: coverageDir,
+          exclude: argv.coverageExclude as string[] | undefined,
+          include: argv.coverageInclude as string[] | undefined,
+          all: argv.coverageAll,
+          skipFull: argv.coverageSkipFull,
+        };
+      }
 
       let basenameFilter: BasenameFilter | undefined;
       if (argv.regex !== undefined) {
