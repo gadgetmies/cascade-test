@@ -19,7 +19,7 @@ import {
 import * as path from "path";
 import * as fs from "fs";
 import { TestSummary } from "../types.js";
-import { getDisplayTestFile } from "../lib/path-utils.js";
+import { getDisplayTestFile, isPathSafe } from "../lib/path-utils.js";
 import { forkExecArgvForScript } from "../lib/fork-ts-script.js";
 import "colors";
 
@@ -150,25 +150,36 @@ const main = async (
         ? filterTestPathsByBasenameRegex(candidates, basenameFilter.re)
         : filterTestPathsByBasenameGlob(candidates, basenameFilter.pattern);
 
+  const exitStatuses: TestResult[] = [];
+  const allTestSummaries: TestSummary[] = [];
+
+  if (config.coverage?.enabled) {
+    const coverageDir = config.coverage.directory;
+    if (!isPathSafe(coverageDir, process.cwd())) {
+      process.stderr.write(
+        `Security Error: Invalid coverage directory "${coverageDir}". It must be a subdirectory of the current working directory and cannot be the current working directory itself.\n`
+          .red
+      );
+      process.exit(1);
+    }
+
+    console.log("\nCode coverage enabled".green);
+    console.log(`Coverage directory: ${coverageDir}`.yellow);
+    console.log(
+      `Coverage reporters: ${config.coverage.reporter.join(", ")}`.yellow
+    );
+
+    if (fs.existsSync(coverageDir)) {
+      fs.rmSync(coverageDir, { recursive: true, force: true });
+    }
+    fs.mkdirSync(coverageDir, { recursive: true });
+  }
+
   if (basenameFilter !== undefined && testFiles.length === 0) {
     console.error(
       "No test files matched the given --regex / --glob filter.".red
     );
     process.exit(1);
-  }
-
-  const exitStatuses: TestResult[] = [];
-  const allTestSummaries: TestSummary[] = [];
-
-  if (config.coverage?.enabled) {
-    console.log("\nCode coverage enabled".green);
-    console.log(`Coverage directory: ${config.coverage.directory}`.yellow);
-    console.log(`Coverage reporters: ${config.coverage.reporter.join(", ")}`.yellow);
-    
-    if (fs.existsSync(config.coverage.directory)) {
-      fs.rmSync(config.coverage.directory, { recursive: true, force: true });
-    }
-    fs.mkdirSync(config.coverage.directory, { recursive: true });
   }
 
   console.log("Found test files matching criteria:\n");
