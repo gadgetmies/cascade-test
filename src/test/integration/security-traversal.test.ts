@@ -5,7 +5,7 @@ import * as fs from 'fs';
 export default test({
     'Coverage Directory Security': {
         'should block coverage directory outside CWD': (): void => {
-            const result = spawnSync('node', ['dist/bin/run-tests.js', 'src/test/integration', '--coverage', '--coverage-dir', '/tmp/unsafe-coverage', '--regex', 'framework.test.ts'], {
+            const result = spawnSync('npx', ['tsx', 'src/bin/run-tests.ts', 'src/test/integration', '--coverage', '--coverage-dir', '/tmp/unsafe-coverage', '--regex', 'framework.test.ts'], {
                 encoding: 'utf8'
             });
 
@@ -15,7 +15,7 @@ export default test({
         },
 
         'should block coverage directory pointing to CWD': (): void => {
-            const result = spawnSync('node', ['dist/bin/run-tests.js', 'src/test/integration', '--coverage', '--coverage-dir', '.', '--regex', 'framework.test.ts'], {
+            const result = spawnSync('npx', ['tsx', 'src/bin/run-tests.ts', 'src/test/integration', '--coverage', '--coverage-dir', '.', '--regex', 'framework.test.ts'], {
                 encoding: 'utf8'
             });
 
@@ -25,7 +25,7 @@ export default test({
         },
 
         'should block coverage directory using traversal to go outside CWD': (): void => {
-            const result = spawnSync('node', ['dist/bin/run-tests.js', 'src/test/integration', '--coverage', '--coverage-dir', '../../tmp', '--regex', 'framework.test.ts'], {
+            const result = spawnSync('npx', ['tsx', 'src/bin/run-tests.ts', 'src/test/integration', '--coverage', '--coverage-dir', '../../tmp', '--regex', 'framework.test.ts'], {
                 encoding: 'utf8'
             });
 
@@ -36,7 +36,7 @@ export default test({
 
         'should allow safe coverage directory': (): void => {
             const safeDir = 'safe-coverage-test';
-            const result = spawnSync('node', ['dist/bin/run-tests.js', 'src/test/integration', '--coverage', '--coverage-dir', safeDir, '--regex', 'framework.test.ts'], {
+            const result = spawnSync('npx', ['tsx', 'src/bin/run-tests.ts', 'src/test/integration', '--coverage', '--coverage-dir', safeDir, '--regex', 'framework.test.ts'], {
                 encoding: 'utf8'
             });
 
