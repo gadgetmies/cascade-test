@@ -37,7 +37,7 @@ function getFixturePath(
   config: Required<FixtureConfig>
 ): string {
   const fixtureDir = getFixtureDir(callerFile, config.fixturesDir);
-  const fixturePath = path.join(fixtureDir, fixtureName);
+  const fixturePath = path.resolve(fixtureDir, fixtureName);
 
   if (!isPathSafe(fixturePath, fixtureDir)) {
     throw new Error(

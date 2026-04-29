@@ -14,7 +14,7 @@ export default test({
             fs.mkdirSync(outsideDir);
           } catch (e) {
             // If we can't create it there, use a different strategy or skip
-            // In the sandbox, /app is the CWD, so /outside_test_dir_traversal might work
+            // In some environments, we might not have permission to write to ..
             return;
           }
       }
@@ -22,8 +22,10 @@ export default test({
       fs.writeFileSync(trapFile, "don't delete me");
 
       try {
-        const result = spawnSync("node", [
-          "dist/bin/run-tests.js",
+        // Use tsx to run the source directly to ensure it works regardless of dist state
+        const result = spawnSync("npx", [
+          "tsx",
+          "src/bin/run-tests.ts",
           testPath,
           "--coverage",
           "--coverage-dir",

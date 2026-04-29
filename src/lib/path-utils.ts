@@ -25,14 +25,9 @@ export function isPathSafe(targetPath: string, baseDir: string): boolean {
     const relative = path.relative(resolvedBase, resolvedPath);
 
     // Path is unsafe if:
-    // 1. It's an absolute path (if input was absolute, path.resolve keeps it absolute)
-    // 2. It's the same as baseDir (relative is empty)
-    // 3. It goes outside baseDir (starts with ..)
-    // 4. It's an absolute path (can happen with path.relative on some systems/cases)
-    if (path.isAbsolute(targetPath)) {
-      return false;
-    }
-
+    // 1. It's the same as baseDir (relative is empty)
+    // 2. It goes outside baseDir (starts with ..)
+    // 3. It's an absolute path (can happen with path.relative on some systems/cases)
     return !(
       relative === "" ||
       relative === ".." ||
