@@ -406,7 +406,7 @@ ${printName(node[0], style)}${
           }
         } catch (e) {
           console.error(`Test '${key}' failed:`.red, e);
-          const error = 'Uncaught error: ' + (e as Error).message;
+          const error = (e as Error).message;
           singleResult = { skipped: false, error };
 
           testResults.push({
