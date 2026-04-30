@@ -82,11 +82,11 @@ const findTestImplementationLine = (filePath: string, testPath: string[]): numbe
   }
 };
 
-const timeout = (timeoutMs: number): TimeoutConfig => {
+const timeout = (timeoutMs: number, label: string = 'Test'): TimeoutConfig => {
   let id: NodeJS.Timeout;
   const promise = new Promise<never>((_, reject) => {
     id = setTimeout(() => {
-      reject(`Test timed out after ${timeoutMs}ms`);
+      reject(new Error(`${label} timed out after ${timeoutMs}ms`));
     }, timeoutMs);
   });
   return {
@@ -366,7 +366,7 @@ ${printName(node[0], style)}${
                 status: 'skipped'
               });
             } else {
-              const assertionTimeout = timeout(setupResult?.timeout || DefaultAssertionTimeout);
+              const assertionTimeout = timeout(setupResult?.timeout || DefaultAssertionTimeout, 'Test');
               timeouts.push(assertionTimeout);
               const { cancel, promise: timeoutPromise } = assertionTimeout;
               const res = await Promise.race([(restElement as TestFunction)(setupResult), timeoutPromise]);
@@ -392,15 +392,18 @@ ${printName(node[0], style)}${
             if (caseRegex && !suiteHasMatchingTests(restElement as TestSuite, testPath)) {
               continue;
             }
-            const groupTimeout = timeout(setupResult?.timeout || DefaultGroupTimeout);
+            const groupTimeout = timeout(setupResult?.timeout || DefaultGroupTimeout, 'Suite');
             timeouts.push(groupTimeout);
             const { cancel, promise: timeoutPromise } = groupTimeout;
-            const nestedResults = await run(restElement as TestSuite, { 
-              skippingReason, 
-              indent: indent + 2, 
-              parentContext: setupResult,
-              currentPath: [...currentPath, key]
-            });
+            const nestedResults = await Promise.race([
+              run(restElement as TestSuite, {
+                skippingReason,
+                indent: indent + 2,
+                parentContext: setupResult,
+                currentPath: [...currentPath, key]
+              }),
+              timeoutPromise,
+            ]);
             singleResult = nestedResults as TestDescription[];
             cancel();
           }

@@ -1,0 +1,32 @@
+{
+  "all": false,
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.js"
+  ],
+  "exclude": [
+    "**/*.test.ts",
+    "**/*.test.js",
+    "**/*.spec.ts",
+    "**/*.spec.js",
+    "**/node_modules/**",
+    "**/test/**",
+    "**/dist/**",
+    "**/*.d.ts"
+  ],
+  "reporter": [
+    "text",
+    "html",
+    "lcov"
+  ],
+  "reports-dir": "./coverage",
+  "skip-full": false,
+  "watermarks": {
+    "statements": [50, 80],
+    "functions": [50, 80],
+    "branches": [50, 80],
+    "lines": [50, 80]
+  }
+}
+
+
