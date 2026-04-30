@@ -5,6 +5,7 @@ export type RunTestsCliArgv = ArgumentsCamelCase<{
   path: string;
   regex?: string;
   glob?: string;
+  test?: string;
   reporter?: string;
   output?: string;
   ci?: string;
@@ -53,6 +54,12 @@ export function runTestsCliCommandBuilder(y: Argv<Record<string, unknown>>): Arg
       description:
         "Shell-style glob (minimatch) against each file basename. Incompatible with --regex.",
       alias: "G",
+      type: "string",
+    })
+    .option("test", {
+      description:
+        "Regex matched against the full test case path (suite and case names).",
+      alias: "t",
       type: "string",
     })
     .option("reporter", {

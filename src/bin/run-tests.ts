@@ -29,6 +29,11 @@ interface TestResult {
   output?: string;
 }
 
+interface ExecutionFailure {
+  test: string;
+  output?: string;
+}
+
 interface CoverageOptions {
   enabled: boolean;
   reporter: string[];
@@ -45,6 +50,7 @@ const runTest = (
     reporter?: string;
     outputFile?: string;
     ci?: string;
+    testPattern?: string;
     basePath: string;
     coverage?: CoverageOptions;
   }
@@ -56,6 +62,7 @@ const runTest = (
       CASCADE_TEST_REPORTER: config.reporter || "console",
       CASCADE_TEST_OUTPUT: config.outputFile || "",
       CASCADE_TEST_CI: config.ci || "auto",
+      CASCADE_TEST_CASE_REGEX: config.testPattern || "",
       CASCADE_TEST_BASE_PATH: config.basePath,
       NODE_V8_COVERAGE: config.coverage?.enabled ? config.coverage.directory : "",
     },
@@ -136,7 +143,13 @@ type BasenameFilter =
 const main = async (
   testPath: string,
   basenameFilter: BasenameFilter | undefined,
-  config: { reporter?: string; outputFile?: string; ci?: string; coverage?: CoverageOptions } = {}
+  config: {
+    reporter?: string;
+    outputFile?: string;
+    ci?: string;
+    testPattern?: string;
+    coverage?: CoverageOptions;
+  } = {}
 ): Promise<void> => {
   const resolvedTestPath = path.resolve(`${process.cwd()}/${testPath}`);
   const candidates = recursivelyFindByRegex(
@@ -225,12 +238,31 @@ const main = async (
   const allFailedTests = allTestSummaries.flatMap(
     (summary) => summary.failedTests
   );
+  if (config.testPattern && totalTests === 0) {
+    console.error(
+      `No test cases matched --test=${config.testPattern}`.red
+    );
+    process.exit(1);
+  }
 
   const failedTests = R.reject(R.propEq(0, "code"), exitStatuses);
+  const testSummariesByFile = new Map(
+    allTestSummaries.map((summary) => [summary.testFile, summary])
+  );
+  const executionFailures: ExecutionFailure[] = failedTests
+    .filter(({ test }) => !testSummariesByFile.has(getDisplayTestFile(test, resolvedTestPath)))
+    .map(({ test, output }) => ({ test, output }));
+  const failedCasesCount = allFailedTests.length;
+  const totalFailedIncludingExecution = totalFailed + executionFailures.length;
 
   if (failedTests.length !== 0) {
     console.log("\n" + "=".repeat(60).red);
-    console.log(`${allFailedTests.length} FAILED TEST CASES`.red.bold);
+    if (failedCasesCount > 0) {
+      console.log(`${failedCasesCount} FAILED TEST CASES`.red.bold);
+    }
+    if (executionFailures.length > 0) {
+      console.log(`${executionFailures.length} TEST FILE EXECUTION ERROR(S)`.red.bold);
+    }
     console.log("=".repeat(60).red);
 
     for (const { testFile, failedTests } of allTestSummaries) {
@@ -248,6 +280,17 @@ const main = async (
           console.log(`    Location: ${location}`.cyan);
         }
         console.log(`    Reason: ${failedTest.error}`.yellow);
+      }
+    }
+
+    if (executionFailures.length > 0) {
+      console.log("\nTest file execution errors:".red.bold);
+      console.log("─".repeat(60).red);
+      for (const { test, output } of executionFailures) {
+        console.log(`  • ${getDisplayTestFile(test, resolvedTestPath)}`.red);
+        if (output && output.trim()) {
+          console.log(`    Output: ${output.trim()}`.yellow);
+        }
       }
     }
 
@@ -287,7 +330,7 @@ const main = async (
     console.log(`\nTest Summary:`.bold);
     console.log(`  Total: ${totalTests}`);
     console.log(`  Passed: ${totalPassed}`.green);
-    console.log(`  Failed: ${totalFailed}`.red);
+    console.log(`  Failed: ${totalFailedIncludingExecution}`.red);
     console.log(`  Skipped: ${totalSkipped}`.yellow);
   }
 };
@@ -332,6 +375,7 @@ cli
         reporter: argv.reporter as any,
         outputFile: argv.output,
         ci: argv.ci === "auto" ? undefined : (argv.ci as any),
+        testPattern: argv.test,
         coverage: coverageConfig,
       });
     }

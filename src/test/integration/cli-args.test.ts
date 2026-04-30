@@ -46,6 +46,20 @@ test({
       expect(argv.glob).to.equal('reporter-*');
     },
 
+    'accepts --test for case-level filtering': (): void => {
+      const argv = parseRunTestsCliArgs([
+        'src/test',
+        '--test',
+        'Basic Tests > should pass simple assertion',
+      ]);
+      expect(argv.test).to.equal('Basic Tests > should pass simple assertion');
+    },
+
+    'accepts -t as alias for --test': (): void => {
+      const argv = parseRunTestsCliArgs(['src/test', '-t', 'should pass']);
+      expect(argv.test).to.equal('should pass');
+    },
+
     'rejects --regex and --glob together': (): void => {
       expect(() =>
         parseRunTestsCliArgs([

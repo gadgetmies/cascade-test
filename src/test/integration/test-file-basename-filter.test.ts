@@ -1,6 +1,7 @@
 import { spawnSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import * as path from 'path';
+import * as fs from 'fs';
 import { test } from '../../index.js';
 import { TestContext } from '../../types.js';
 import { expect } from 'chai';
@@ -79,6 +80,71 @@ test({
       expect(`${r.stderr ?? ''}${r.stdout ?? ''}`).to.match(
         /No test files matched/
       );
+    },
+
+    'CLI runs a single test case and still executes setup/teardown': (): void => {
+      const r = runTestsCli([
+        'src/test/examples',
+        '--glob',
+        'basic.test.ts',
+        '--test',
+        'Basic Tests > should pass simple assertion',
+      ]);
+      expect(r.status).to.equal(0);
+      expect(`${r.stdout ?? ''}`).to.include('Setting up basic tests...');
+      expect(`${r.stdout ?? ''}`).to.include('Cleaning up basic tests...');
+      expect(`${r.stdout ?? ''}`).to.match(/Total:\s+1/);
+      expect(`${r.stdout ?? ''}`).to.match(/Passed:\s+1/);
+      expect(`${r.stdout ?? ''}`).to.match(/Failed:\s+0/);
+    },
+
+    'CLI exits with code 1 when --test matches no test cases': (): void => {
+      const r = runTestsCli([
+        'src/test/examples',
+        '--glob',
+        'basic.test.ts',
+        '--test',
+        '^definitely-no-match$',
+      ]);
+      expect(r.status).to.equal(1);
+      expect(`${r.stderr ?? ''}${r.stdout ?? ''}`).to.match(
+        /No test cases matched/
+      );
+    },
+
+    'CLI reports setup crashes in forked process as execution errors': (): void => {
+      const tempDir = fs.mkdtempSync(path.join(projectRoot, '.tmp-cascade-setup-crash-'));
+      const fixturePath = path.join(tempDir, 'setup-crash.test.ts');
+      const entryPath = path
+        .resolve(projectRoot, 'src/index.ts')
+        .replace(/\\/g, '\\\\');
+
+      const fixtureSource = `
+import { test } from '${entryPath}';
+
+test({
+  setup: () => {
+    setTimeout(() => {
+      throw new Error('uncaught setup crash');
+    }, 0);
+    return {};
+  },
+  'will never complete': async () => {
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  },
+});
+`;
+      fs.writeFileSync(fixturePath, fixtureSource);
+
+      try {
+        const r = runTestsCli([path.relative(projectRoot, tempDir)]);
+        const output = `${r.stderr ?? ''}${r.stdout ?? ''}`;
+        expect(r.status).to.equal(1);
+        expect(output).to.match(/TEST FILE EXECUTION ERROR\(S\)/);
+        expect(output).to.not.match(/0 FAILED TEST CASES/);
+      } finally {
+        fs.rmSync(tempDir, { recursive: true, force: true });
+      }
     },
   },
 });

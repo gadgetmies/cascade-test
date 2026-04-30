@@ -52,6 +52,7 @@ export interface TestConfig {
   reporter?: TestReporterType;
   outputFile?: string;
   ci?: CIEnvironment;
+  testPattern?: string;
   coverage?: CoverageConfig;
 }
 

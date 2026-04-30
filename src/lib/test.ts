@@ -137,7 +137,36 @@ const test: TestFunctionType = async (suite: TestSuite, config: TestConfig = {})
   // Initialize reporter and CI detection
   const ci = finalConfig.ci || detectCI();
   const reporter = createReporter(finalConfig.reporter || 'console', finalConfig.outputFile);
+  const casePattern = config.testPattern || process.env.CASCADE_TEST_CASE_REGEX;
+  const caseRegex = casePattern ? new RegExp(casePattern) : undefined;
   const testResults: TestResult[] = [];
+  const matchesCaseFilter = (testPath: string[]): boolean => {
+    if (!caseRegex) {
+      return true;
+    }
+    caseRegex.lastIndex = 0;
+    const scopePath = testPath.slice(1);
+    const fullPath = scopePath.join(' > ');
+    const leafName = scopePath.at(-1) || '';
+    return caseRegex.test(fullPath) || caseRegex.test(leafName);
+  };
+  const suiteHasMatchingTests = (suiteNode: TestSuite, currentPath: string[]): boolean => {
+    const { setup, teardown, skip, timeout, ...entries } = suiteNode;
+    for (const key of Object.keys(entries)) {
+      const value = entries[key];
+      const nextPath = [...currentPath, key];
+      if (R.is(Function, value)) {
+        if (matchesCaseFilter(nextPath)) {
+          return true;
+        }
+        continue;
+      }
+      if (suiteHasMatchingTests(value as TestSuite, nextPath)) {
+        return true;
+      }
+    }
+    return false;
+  };
   const extractFnPaths = (node: TestNode): TestPath[] =>
     Object.keys(node).reduce(
       (acc: TestPath[], key: string) => {
@@ -255,6 +284,9 @@ ${printName(node[0], style)}${
   ): Promise<TestStructure[]> => {
     try {
       const { setup = passThrough, teardown = noop, skip = noop, ...rest } = suite;
+      if (caseRegex && !suiteHasMatchingTests(rest as TestSuite, currentPath)) {
+        return [];
+      }
 
       // Only evaluate this suite's skip if no ancestor has already marked it as skipped
       if (!skippingReason && skip !== noop) {
@@ -319,7 +351,10 @@ ${printName(node[0], style)}${
         const testPath = [...currentPath, key];
 
         try {
-          if (R.is(Function, restElement)) {            
+          if (R.is(Function, restElement)) {
+            if (caseRegex && !matchesCaseFilter(testPath)) {
+              continue;
+            }
             if (skippingReason) {
               singleResult = {
                 skipped: skippingReason
@@ -354,6 +389,9 @@ ${printName(node[0], style)}${
               cancel();
             }
           } else {
+            if (caseRegex && !suiteHasMatchingTests(restElement as TestSuite, testPath)) {
+              continue;
+            }
             const groupTimeout = timeout(setupResult?.timeout || DefaultGroupTimeout);
             timeouts.push(groupTimeout);
             const { cancel, promise: timeoutPromise } = groupTimeout;
