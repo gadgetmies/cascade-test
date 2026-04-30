@@ -1,6 +1,6 @@
 {
   "name": "cascade-test",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "A test framework where context cascades through your test hierarchy. Built with TypeScript for type safety and plain JavaScript objects with automatic context passing.",
   "type": "module",
   "main": "dist/index.js",
