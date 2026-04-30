@@ -76,7 +76,7 @@ export interface TestSummary {
   passed: number;
   failed: number;
   skipped: number;
-  failedTests: Array<{ path: string[]; error: string }>;
+  failedTests: Array<{ path: string[]; error: string; file?: string; line?: number }>;
   results: TestResult[];
   testFile: string;
 }
@@ -115,7 +115,7 @@ export interface CascadeTestModule {
   fileUtils: FileUtils;
   createReporter: (type: string, outputFile?: string) => TestReporter;
   detectCI: () => CIEnvironment;
-  addCIAnnotations: (failedTests: Array<{ path: string[]; error: string }>, ci: CIEnvironment) => void;
+  addCIAnnotations: (failedTests: Array<{ path: string[]; error: string; file?: string; line?: number }>, ci: CIEnvironment) => void;
 }
 
 // Fixture utility types

@@ -38,6 +38,50 @@ const DefaultGroupTimeout = 10000;
 const noop = (): null => null;
 const passThrough = (value: any): any => value;
 
+const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const normalizeFilePath = (filePath: string): string => {
+  if (filePath.startsWith('file://')) {
+    return decodeURIComponent(filePath.replace('file://', ''));
+  }
+  return filePath;
+};
+
+const findTestImplementationLine = (filePath: string, testPath: string[]): number | undefined => {
+  try {
+    const source = fs.readFileSync(normalizeFilePath(filePath), 'utf8');
+    const lines = source.split('\n');
+    let searchFrom = 0;
+    let matchedLine: number | undefined;
+
+    for (const segment of testPath) {
+      const escapedSegment = escapeRegExp(segment);
+      const quotedPattern = new RegExp(`['"\`]${escapedSegment}['"\`]\\s*:`);
+      const barePattern = new RegExp(`\\b${escapedSegment}\\b\\s*:`);
+      let found = -1;
+
+      for (let i = searchFrom; i < lines.length; i += 1) {
+        const line = lines[i];
+        if (quotedPattern.test(line) || barePattern.test(line)) {
+          found = i;
+          break;
+        }
+      }
+
+      if (found === -1) {
+        break;
+      }
+
+      matchedLine = found + 1;
+      searchFrom = found + 1;
+    }
+
+    return matchedLine;
+  } catch {
+    return undefined;
+  }
+};
+
 const timeout = (timeoutMs: number): TimeoutConfig => {
   let id: NodeJS.Timeout;
   const promise = new Promise<never>((_, reject) => {
@@ -142,6 +186,8 @@ const test: TestFunctionType = async (suite: TestSuite, config: TestConfig = {})
   interface FailedTest {
     path: string[];
     error: string;
+    file?: string;
+    line?: number;
   }
 
   const isTestGroup = (content: TestContent): content is TestDescription[] => {
@@ -156,7 +202,7 @@ const test: TestFunctionType = async (suite: TestSuite, config: TestConfig = {})
     return description.length === 2;
   };
 
-  const collectFailedTests = (structure: TestStructure, currentPath: string[] = []): FailedTest[] => {
+  const collectFailedTests = (structure: TestStructure, currentPath: string[] = [], sourceFile?: string): FailedTest[] => {
     const [name, content] = structure;
     const fullPath = [...currentPath, name];
     const failedTests: FailedTest[] = [];
@@ -164,16 +210,22 @@ const test: TestFunctionType = async (suite: TestSuite, config: TestConfig = {})
     if (isTestGroup(content)) {
       for (const child of content) {
         if (isTestStructure(child)) {
-          failedTests.push(...collectFailedTests(child, fullPath));
+          failedTests.push(...collectFailedTests(child, fullPath, sourceFile));
         }
         // TODO: In what case would the content be a list of strings and contain only one element?
         // Skip [string] only descriptions as they don't contain test results
       }
     } else if (isTestResult(content) && content.error) {
+      const testHierarchy = fullPath.slice(1);
+      const resolvedSourceFile = sourceFile ? normalizeFilePath(sourceFile) : undefined;
+      const line = resolvedSourceFile ? findTestImplementationLine(resolvedSourceFile, testHierarchy) : undefined;
+      const relativeFile = resolvedSourceFile ? path.relative(process.cwd(), resolvedSourceFile) : undefined;
       // This is a failed test
       failedTests.push({
         path: fullPath,
-        error: content.error
+        error: content.error,
+        file: relativeFile,
+        line
       });
     }
 
@@ -357,7 +409,7 @@ ${printName(node[0], style)}${
     const result = [displayTestFile, await run(suite, { currentPath: [testFile || 'unknown'] })] as TestStructure;
     console.log('\nResults:\n', printStructure(result));
     
-    const failedTests = collectFailedTests(result);
+    const failedTests = collectFailedTests(result, [], testFile);
     const exitCode = failedTests.length === 0 ? 0 : 1;
     
     // Use reporter to generate output
@@ -395,6 +447,10 @@ ${printName(node[0], style)}${
       failedTests.forEach((failedTest) => {
         const pathString = failedTest.path.slice(1).join(' → ');
         console.log(`\n• ${pathString}`.red);
+        if (failedTest.file) {
+          const location = failedTest.line ? `${failedTest.file}:${failedTest.line}` : failedTest.file;
+          console.log(`  Location: ${location}`.cyan);
+        }
         console.log(`  Reason: ${failedTest.error}`.yellow);
       });
       

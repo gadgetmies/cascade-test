@@ -243,6 +243,10 @@ const main = async (
 
       for (const failedTest of failedTests) {
         console.log(`  • ${failedTest.path.slice(1).join(" → ")}`.red);
+        if (failedTest.file) {
+          const location = failedTest.line ? `${failedTest.file}:${failedTest.line}` : failedTest.file;
+          console.log(`    Location: ${location}`.cyan);
+        }
         console.log(`    Reason: ${failedTest.error}`.yellow);
       }
     }

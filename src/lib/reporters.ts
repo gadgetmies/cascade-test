@@ -35,7 +35,7 @@ export const detectCI = (): CIEnvironment => {
 /**
  * Add CI-specific annotations to console output
  */
-export const addCIAnnotations = (failedTests: Array<{ path: string[]; error: string }>, ci: CIEnvironment): void => {
+export const addCIAnnotations = (failedTests: Array<{ path: string[]; error: string; file?: string; line?: number }>, ci: CIEnvironment): void => {
   if (failedTests.length === 0) return;
 
   switch (ci) {
