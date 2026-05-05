@@ -1,0 +1,4 @@
+## 2026-03-15 - [CRITICAL] Arbitrary Directory Deletion via Coverage Directory Option
+**Vulnerability:** The test runner (`src/bin/run-tests.ts`) would recursively delete any directory specified by the `--coverage-dir` flag without validation, allowing for arbitrary directory deletion on the host system.
+**Learning:** `fs.rmSync` with `{ recursive: true }` is extremely dangerous when the path is derived from user input or configuration without strict boundary validation. `path.join` and `path.resolve` alone do not prevent escaping the intended directory.
+**Prevention:** Always validate that paths intended for file operations (especially deletions) are within the expected boundaries (e.g., the current working directory or a specific data directory) using a combination of `path.resolve` and `path.relative` to check for escaping (e.g., `!path.relative(root, target).startsWith('..')`).
