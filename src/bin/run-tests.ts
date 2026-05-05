@@ -174,10 +174,31 @@ const main = async (
   const allTestSummaries: TestSummary[] = [];
 
   if (config.coverage?.enabled) {
+    const resolvedCoverageDir = path.resolve(config.coverage.directory);
+    const relative = path.relative(process.cwd(), resolvedCoverageDir);
+    const isOutsideOrCwd =
+      relative === ".." ||
+      relative.startsWith(".." + path.sep) ||
+      path.isAbsolute(relative) ||
+      relative === "";
+
+    if (isOutsideOrCwd) {
+      console.error(
+        `Error: Invalid coverage directory "${config.coverage.directory}". It must be a safe subdirectory within the current working directory.`
+          .red
+      );
+      process.exit(1);
+    }
+
+    // Ensure we use the validated path
+    config.coverage.directory = resolvedCoverageDir;
+
     console.log("\nCode coverage enabled".green);
     console.log(`Coverage directory: ${config.coverage.directory}`.yellow);
-    console.log(`Coverage reporters: ${config.coverage.reporter.join(", ")}`.yellow);
-    
+    console.log(
+      `Coverage reporters: ${config.coverage.reporter.join(", ")}`.yellow
+    );
+
     if (fs.existsSync(config.coverage.directory)) {
       fs.rmSync(config.coverage.directory, { recursive: true, force: true });
     }
