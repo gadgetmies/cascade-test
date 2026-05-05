@@ -177,6 +177,15 @@ const main = async (
     console.log("\nCode coverage enabled".green);
     console.log(`Coverage directory: ${config.coverage.directory}`.yellow);
     console.log(`Coverage reporters: ${config.coverage.reporter.join(", ")}`.yellow);
+
+    const resolvedCoverageDir = path.resolve(config.coverage.directory);
+    const relativePath = path.relative(process.cwd(), resolvedCoverageDir);
+    const isOutsideCwd = relativePath.startsWith('..') || path.isAbsolute(relativePath);
+
+    if (isOutsideCwd) {
+      console.error(`\nSecurity Error: Coverage directory must be within the current working directory. Resolved path: ${resolvedCoverageDir}`.red);
+      process.exit(1);
+    }
     
     if (fs.existsSync(config.coverage.directory)) {
       fs.rmSync(config.coverage.directory, { recursive: true, force: true });
