@@ -174,10 +174,26 @@ const main = async (
   const allTestSummaries: TestSummary[] = [];
 
   if (config.coverage?.enabled) {
+    const resolvedCoverageDir = path.resolve(process.cwd(), config.coverage.directory);
+    const relativeCoverageDir = path.relative(process.cwd(), resolvedCoverageDir);
+
+    // Security check: ensure coverage directory is within current working directory
+    // and is not the current working directory itself
+    if (relativeCoverageDir.startsWith("..") || path.isAbsolute(relativeCoverageDir) || relativeCoverageDir === "") {
+      console.error(
+        `\nSecurity Error: Coverage directory "${config.coverage.directory}" must be a subdirectory within the current working directory.`
+          .red
+      );
+      process.exit(1);
+    }
+
+    // Update config with resolved path for subsequent operations
+    config.coverage.directory = resolvedCoverageDir;
+
     console.log("\nCode coverage enabled".green);
     console.log(`Coverage directory: ${config.coverage.directory}`.yellow);
     console.log(`Coverage reporters: ${config.coverage.reporter.join(", ")}`.yellow);
-    
+
     if (fs.existsSync(config.coverage.directory)) {
       fs.rmSync(config.coverage.directory, { recursive: true, force: true });
     }
