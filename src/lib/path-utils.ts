@@ -13,3 +13,21 @@ export function getDisplayTestFile(testFile: string, basePath?: string): string 
     return testFile;
   }
 }
+
+/**
+ * Validates if a target path is a safe subdirectory of baseDir.
+ * Prevents directory traversal and ensures the target is not the base directory itself.
+ */
+export function isPathSafe(targetPath: string, baseDir: string): boolean {
+  const resolvedPath = path.resolve(targetPath);
+  const resolvedBase = path.resolve(baseDir);
+  const relative = path.relative(resolvedBase, resolvedPath);
+
+  const isUnsafe =
+    relative === ".." ||
+    relative.startsWith(".." + path.sep) ||
+    path.isAbsolute(relative) ||
+    relative === "";
+
+  return !isUnsafe;
+}
