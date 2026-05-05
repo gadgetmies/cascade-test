@@ -177,7 +177,24 @@ const main = async (
     console.log("\nCode coverage enabled".green);
     console.log(`Coverage directory: ${config.coverage.directory}`.yellow);
     console.log(`Coverage reporters: ${config.coverage.reporter.join(", ")}`.yellow);
-    
+
+    const resolvedCoverageDir = path.resolve(config.coverage.directory);
+    const relativeCoverageDir = path.relative(process.cwd(), resolvedCoverageDir);
+
+    // Security check: ensure coverage directory is within current working directory
+    // to prevent arbitrary directory deletion.
+    if (
+      relativeCoverageDir.startsWith("..") ||
+      path.isAbsolute(relativeCoverageDir) ||
+      relativeCoverageDir === ""
+    ) {
+      console.error(
+        `\nSecurity Error: Coverage directory must be a subdirectory of the current workspace. Received: ${config.coverage.directory}`
+          .red
+      );
+      process.exit(1);
+    }
+
     if (fs.existsSync(config.coverage.directory)) {
       fs.rmSync(config.coverage.directory, { recursive: true, force: true });
     }
