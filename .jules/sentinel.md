@@ -1,0 +1,4 @@
+## 2026-04-24 - [CRITICAL] Fix arbitrary directory deletion and path traversal in test runner and fixtures
+**Vulnerability:** The `--coverage-dir` option in the CLI runner allowed specifying any directory path, which was then recursively deleted by `fs.rmSync` before test execution. Additionally, the `assertFixture` utility did not validate `fixtureName`, allowing potential path traversal.
+**Learning:** Tools that perform destructive operations (like `rmSync`) or file system access based on user-controlled input must strictly validate that the resulting paths remain within intended boundaries (e.g., the project's current working directory or specific subdirectories).
+**Prevention:** Use a robust path validation utility (like `isPathSafe`) that leverages `path.relative` to ensure a target path is a safe subdirectory of a base directory and not the base directory itself.

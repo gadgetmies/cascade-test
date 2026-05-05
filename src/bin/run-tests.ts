@@ -19,7 +19,7 @@ import {
 import * as path from "path";
 import * as fs from "fs";
 import { TestSummary } from "../types.js";
-import { getDisplayTestFile } from "../lib/path-utils.js";
+import { getDisplayTestFile, isPathSafe } from "../lib/path-utils.js";
 import { forkExecArgvForScript } from "../lib/fork-ts-script.js";
 import "colors";
 
@@ -174,10 +174,21 @@ const main = async (
   const allTestSummaries: TestSummary[] = [];
 
   if (config.coverage?.enabled) {
+    // Security check: Ensure coverage directory is safe to delete and create
+    if (!isPathSafe(config.coverage.directory, process.cwd())) {
+      console.error(
+        `Security Error: Coverage directory '${config.coverage.directory}' is outside the current working directory or points to it.`
+          .red
+      );
+      process.exit(1);
+    }
+
     console.log("\nCode coverage enabled".green);
     console.log(`Coverage directory: ${config.coverage.directory}`.yellow);
-    console.log(`Coverage reporters: ${config.coverage.reporter.join(", ")}`.yellow);
-    
+    console.log(
+      `Coverage reporters: ${config.coverage.reporter.join(", ")}`.yellow
+    );
+
     if (fs.existsSync(config.coverage.directory)) {
       fs.rmSync(config.coverage.directory, { recursive: true, force: true });
     }
