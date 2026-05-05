@@ -352,17 +352,32 @@ cli
         console.error(msg);
         process.exit(1);
       }
-      const coverageConfig: CoverageOptions | undefined = argv.coverage
-        ? {
-            enabled: true,
-            reporter: argv.coverageReporter as string[] || ["text", "html"],
-            directory: argv.coverageDir || "coverage",
-            exclude: argv.coverageExclude as string[] | undefined,
-            include: argv.coverageInclude as string[] | undefined,
-            all: argv.coverageAll,
-            skipFull: argv.coverageSkipFull,
-          }
-        : undefined;
+      let coverageConfig: CoverageOptions | undefined;
+      if (argv.coverage) {
+        const coverageDir = argv.coverageDir || "coverage";
+        const resolvedCoverageDir = path.resolve(process.cwd(), coverageDir);
+        const relative = path.relative(process.cwd(), resolvedCoverageDir);
+
+        // Security check: ensure coverage directory is within CWD and not CWD itself
+        if (relative === "") {
+          console.error("Security Error: coverage-dir cannot be the current working directory".red);
+          process.exit(1);
+        }
+        if (relative.startsWith("..") || path.isAbsolute(relative)) {
+          console.error("Security Error: coverage-dir must be a subdirectory of the current working directory".red);
+          process.exit(1);
+        }
+
+        coverageConfig = {
+          enabled: true,
+          reporter: (argv.coverageReporter as string[]) || ["text", "html"],
+          directory: resolvedCoverageDir,
+          exclude: argv.coverageExclude as string[] | undefined,
+          include: argv.coverageInclude as string[] | undefined,
+          all: argv.coverageAll,
+          skipFull: argv.coverageSkipFull,
+        };
+      }
 
       let basenameFilter: BasenameFilter | undefined;
       if (argv.regex !== undefined) {
