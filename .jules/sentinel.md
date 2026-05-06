@@ -1,0 +1,4 @@
+## 2026-05-06 - Arbitrary Directory Deletion via Coverage Directory Option
+**Vulnerability:** The `--coverage-dir` option allowed users to specify any directory, which was then deleted using `fs.rmSync(..., { recursive: true })` before test execution. This could be exploited to delete arbitrary directories on the system.
+**Learning:** `path.resolve` and `path.join` do not prevent directory traversal. Even if the path is resolved, it can still point outside the intended base directory. Furthermore, allowing the path to be the base directory itself (CWD) can lead to accidental deletion of the entire project.
+**Prevention:** Use `path.relative(baseDir, resolvedPath)` to validate that the target path is a safe subdirectory of the base directory. Block paths that result in an empty string (pointing to baseDir), start with `..`, or are absolute.
