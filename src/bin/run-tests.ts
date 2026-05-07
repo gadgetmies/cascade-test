@@ -19,7 +19,7 @@ import {
 import * as path from "path";
 import * as fs from "fs";
 import { TestSummary } from "../types.js";
-import { getDisplayTestFile } from "../lib/path-utils.js";
+import { getDisplayTestFile, isPathSafe } from "../lib/path-utils.js";
 import { forkExecArgvForScript } from "../lib/fork-ts-script.js";
 import "colors";
 
@@ -151,6 +151,17 @@ const main = async (
     coverage?: CoverageOptions;
   } = {}
 ): Promise<void> => {
+  // Security validation for coverage directory and output file
+  if (config.coverage?.enabled && !isPathSafe(config.coverage.directory)) {
+    console.error(`Security Error: Coverage directory '${config.coverage.directory}' is outside the current working directory or points to it.`.red);
+    process.exit(1);
+  }
+
+  if (config.outputFile && !isPathSafe(config.outputFile)) {
+    console.error(`Security Error: Output file '${config.outputFile}' is outside the current working directory or points to it.`.red);
+    process.exit(1);
+  }
+
   const resolvedTestPath = path.resolve(`${process.cwd()}/${testPath}`);
   const candidates = recursivelyFindByRegex(
     resolvedTestPath,
@@ -178,10 +189,17 @@ const main = async (
     console.log(`Coverage directory: ${config.coverage.directory}`.yellow);
     console.log(`Coverage reporters: ${config.coverage.reporter.join(", ")}`.yellow);
     
-    if (fs.existsSync(config.coverage.directory)) {
-      fs.rmSync(config.coverage.directory, { recursive: true, force: true });
+    // Resolve the coverage directory and use it consistently.
+    // We already validated config.coverage.directory with isPathSafe.
+    const resolvedCoverageDir = path.resolve(config.coverage.directory);
+
+    if (fs.existsSync(resolvedCoverageDir)) {
+      fs.rmSync(resolvedCoverageDir, { recursive: true, force: true });
     }
-    fs.mkdirSync(config.coverage.directory, { recursive: true });
+    fs.mkdirSync(resolvedCoverageDir, { recursive: true });
+
+    // Update config to use the absolute resolved path to prevent any further traversal issues
+    config.coverage.directory = resolvedCoverageDir;
   }
 
   console.log("Found test files matching criteria:\n");

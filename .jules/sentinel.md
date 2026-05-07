@@ -1,0 +1,4 @@
+## 2026-05-07 - Path Traversal in CLI and Fixtures
+**Vulnerability:** CLI options like `--coverage-dir` and `--output` allowed arbitrary directory deletion and file overwriting because they performed `rmSync` or `mkdirSync` on user-controlled paths without validation. Similarly, `assertFixture` allowed reading arbitrary files by providing a malicious `fixtureName`.
+**Learning:** `path.resolve` and `path.join` do not prevent directory traversal; they merely resolve the path. If a user provides a path like `../sensitive`, resolving it from a base directory will point outside that directory.
+**Prevention:** Always validate that resolved user-controlled paths are safe subdirectories of the intended base directory using `path.relative`. A path is unsafe if the relative path is empty (points to the base itself), starts with `..` (traversal), or is absolute.
