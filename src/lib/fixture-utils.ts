@@ -3,6 +3,7 @@ import * as path from "path";
 import { FixtureConfig } from "../types.js";
 import { diff } from "jest-diff";
 import pkg from "lodash";
+import { isPathSafe } from "./path-utils.js";
 const { isEqual } = pkg;
 
 /**
@@ -36,6 +37,11 @@ function getFixturePath(
   config: Required<FixtureConfig>
 ): string {
   const fixtureDir = getFixtureDir(callerFile, config.fixturesDir);
+
+  if (!isPathSafe(fixtureDir, fixtureName)) {
+    throw new Error(`Security Error: Fixture name '${fixtureName}' attempts to access a path outside the fixtures directory.`);
+  }
+
   return path.join(fixtureDir, fixtureName);
 }
 
