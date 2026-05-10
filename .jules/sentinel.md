@@ -1,0 +1,4 @@
+## 2026-05-10 - Directory Traversal via CLI and Fixtures
+**Vulnerability:** The test runner allowed arbitrary directory deletion and file writing via the `--coverage-dir` and `--output` CLI options. Similarly, the `assertFixture` utility allowed path traversal through the `fixtureName` parameter.
+**Learning:** Tools that perform cleanup (like `fs.rmSync` on a coverage directory) or automated file writing are high-risk if paths are user-controlled. Even if input is "test code", it should be treated as untrusted in a shared environment.
+**Prevention:** Always validate user-provided paths against a safe base directory (e.g., `process.cwd()`) using a robust validation pattern like `path.relative`. Ensure the target path is a safe subdirectory and not the base directory itself to prevent accidental self-deletion.
