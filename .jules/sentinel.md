@@ -1,0 +1,4 @@
+## 2026-05-11 - Path Traversal in CLI and Fixture Utilities
+**Vulnerability:** CLI options like `--coverage-dir` and `--output`, as well as fixture names in `assertFixture`, allowed path traversal (e.g., `../..`). The coverage directory was specifically vulnerable to arbitrary directory deletion because it performed `fs.rmSync` on the provided path before starting tests.
+**Learning:** Using `path.resolve()` on user input is not sufficient to prevent directory traversal. Tools that perform cleanup or write files must validate that the resolved path is a safe subdirectory of an intended base directory and NOT the base directory itself (to avoid self-deletion).
+**Prevention:** Implement a robust `isPathSafe` utility using `path.relative(base, target)` and check that the result does not start with `..`, is not absolute, and is not an empty string.
