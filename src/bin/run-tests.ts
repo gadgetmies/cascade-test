@@ -19,7 +19,7 @@ import {
 import * as path from "path";
 import * as fs from "fs";
 import { TestSummary } from "../types.js";
-import { getDisplayTestFile } from "../lib/path-utils.js";
+import { getDisplayTestFile, isPathSafe } from "../lib/path-utils.js";
 import { forkExecArgvForScript } from "../lib/fork-ts-script.js";
 import "colors";
 
@@ -174,6 +174,14 @@ const main = async (
   const allTestSummaries: TestSummary[] = [];
 
   if (config.coverage?.enabled) {
+    if (!isPathSafe(process.cwd(), config.coverage.directory)) {
+      console.error(
+        `Security Error: Coverage directory '${config.coverage.directory}' is outside the current working directory or points to it.`
+          .red
+      );
+      process.exit(1);
+    }
+
     console.log("\nCode coverage enabled".green);
     console.log(`Coverage directory: ${config.coverage.directory}`.yellow);
     console.log(`Coverage reporters: ${config.coverage.reporter.join(", ")}`.yellow);
@@ -369,6 +377,14 @@ cli
         basenameFilter = { kind: "regex", re: new RegExp(argv.regex) };
       } else if (argv.glob !== undefined) {
         basenameFilter = { kind: "glob", pattern: argv.glob };
+      }
+
+      if (argv.output && !isPathSafe(process.cwd(), argv.output)) {
+        console.error(
+          `Security Error: Output file '${argv.output}' is outside the current working directory.`
+            .red
+        );
+        process.exit(1);
       }
 
       return main(argv.path, basenameFilter, {
