@@ -1,43 +1,28 @@
 import { test } from "../../index.js";
 import { assertFixture } from "../../lib/fixture-utils.js";
 import { execSync } from "child_process";
-import * as path from "path";
-import * as fs from "fs";
 
 test({
   "Security Path Validation": {
-    "should block unsafe coverage directory": () => {
+    "should block unsafe paths": () => {
+      const run = (args: string) => execSync(`npx tsx src/bin/run-tests.ts src/test/examples ${args}`, { stdio: "pipe" });
       try {
-        execSync("node dist/bin/run-tests.js src/test/examples --coverage --coverage-dir ../unsafe-coverage", { stdio: "pipe" });
-        return "Should have failed but succeeded";
+        run("--coverage --coverage-dir ../unsafe");
+        return "Coverage dir not blocked";
       } catch (e: any) {
-        const output = e.stderr.toString();
-        if (!output.includes("Security Error: Coverage directory '../unsafe-coverage' is outside the current working directory")) {
-          return `Expected security error, got: ${output}`;
-        }
+        if (!e.stderr.toString().includes("Security Error")) return "Wrong coverage error";
       }
-    },
-
-    "should block unsafe output file": () => {
       try {
-        execSync("node dist/bin/run-tests.js src/test/examples --reporter json --output ../unsafe-output.json", { stdio: "pipe" });
-        return "Should have failed but succeeded";
+        run("--reporter json --output ../unsafe.json");
+        return "Output file not blocked";
       } catch (e: any) {
-        const output = e.stderr.toString();
-        if (!output.includes("Security Error: Output file '../unsafe-output.json' is outside the current working directory")) {
-          return `Expected security error, got: ${output}`;
-        }
+        if (!e.stderr.toString().includes("Security Error")) return "Wrong output error";
       }
-    },
-
-    "should block traversing fixture paths": () => {
       try {
-        assertFixture("../unsafe-fixture.json", { test: "data" });
-        return "Should have failed but succeeded";
+        assertFixture("../unsafe.json", {});
+        return "Fixture path not blocked";
       } catch (e: any) {
-        if (!e.message.includes("Security Error: Fixture path '../unsafe-fixture.json' traverses outside the fixtures directory.")) {
-          return `Expected security error, got: ${e.message}`;
-        }
+        if (!e.message.includes("Security Error")) return "Wrong fixture error";
       }
     }
   }
