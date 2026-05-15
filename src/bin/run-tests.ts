@@ -19,7 +19,7 @@ import {
 import * as path from "path";
 import * as fs from "fs";
 import { TestSummary } from "../types.js";
-import { getDisplayTestFile } from "../lib/path-utils.js";
+import { getDisplayTestFile, isPathSafe } from "../lib/path-utils.js";
 import { forkExecArgvForScript } from "../lib/fork-ts-script.js";
 import "colors";
 
@@ -363,6 +363,22 @@ cli
             skipFull: argv.coverageSkipFull,
           }
         : undefined;
+
+      if (coverageConfig && !isPathSafe(coverageConfig.directory)) {
+        console.error(
+          `Security Error: Coverage directory '${coverageConfig.directory}' is outside the current working directory or points to it.`
+            .red
+        );
+        process.exit(1);
+      }
+
+      if (argv.output && !isPathSafe(argv.output)) {
+        console.error(
+          `Security Error: Output file '${argv.output}' is outside the current working directory or points to it.`
+            .red
+        );
+        process.exit(1);
+      }
 
       let basenameFilter: BasenameFilter | undefined;
       if (argv.regex !== undefined) {
