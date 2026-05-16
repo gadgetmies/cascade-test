@@ -18,7 +18,11 @@ export interface ReporterTestConfig {
 
 export const setupReporterTest = async (config: ReporterTestConfig): Promise<{ config: ReporterTestConfig; result: TestRunResult }> => {
     const exampleTestPath = path.resolve(__dirname, '../test/examples/example.test.ts');
-    const tempFile = path.join(os.tmpdir(), `cascade-test-${config.reporterType}-${Date.now()}.tmp`);
+    const localTmpDir = path.join(process.cwd(), '.tmp');
+    if (!fs.existsSync(localTmpDir)) {
+      fs.mkdirSync(localTmpDir, { recursive: true });
+    }
+    const tempFile = path.join(localTmpDir, `cascade-test-${config.reporterType}-${Date.now()}.tmp`);
 
     const result = await runTestFile(exampleTestPath, config.reporterType, tempFile);
     

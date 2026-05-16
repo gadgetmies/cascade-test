@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { TestReporter, TestInfo, TestResult, CIEnvironment } from '../types.js';
+import { isPathSafe } from './path-utils.js';
 
 /**
  * Convert absolute file path to relative path from current working directory
@@ -324,6 +325,11 @@ export const createReporter = (type: string, outputFile?: string): TestReporter 
 
   // If output file is specified, write the output to file
   if (outputFile && type !== 'console') {
+    if (!isPathSafe(process.cwd(), outputFile)) {
+      console.error(`Security Error: Output file path '${outputFile}' is outside the current working directory or points to it.`.red);
+      process.exit(1);
+    }
+
     const originalGenerateOutput = reporter.generateOutput.bind(reporter);
     reporter.generateOutput = () => {
       const output = originalGenerateOutput();
