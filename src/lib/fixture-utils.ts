@@ -35,6 +35,9 @@ function getFixturePath(
   fixtureName: string,
   config: Required<FixtureConfig>
 ): string {
+  if (path.isAbsolute(fixtureName) || fixtureName.includes("..")) {
+    throw new Error(`Security Error: Invalid fixture name '${fixtureName}'. Absolute paths and directory traversal are not allowed.`);
+  }
   const fixtureDir = getFixtureDir(callerFile, config.fixturesDir);
   return path.join(fixtureDir, fixtureName);
 }
