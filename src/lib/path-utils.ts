@@ -13,3 +13,32 @@ export function getDisplayTestFile(testFile: string, basePath?: string): string 
     return testFile;
   }
 }
+
+/**
+ * Validates if a target path is a safe subdirectory of a base directory.
+ * This prevents directory traversal attacks.
+ */
+export function isPathSafe(targetPath: string, baseDir: string = process.cwd()): boolean {
+  try {
+    const resolvedBase = path.resolve(baseDir);
+    const resolvedPath = path.resolve(targetPath);
+
+    const relative = path.relative(resolvedBase, resolvedPath);
+
+    // Check if the path is outside the base directory
+    // path.relative returns '' if they are the same
+    // We want to block paths that go up (starting with ..) or are absolute
+    if (relative === '..' || relative.startsWith('..' + path.sep) || path.isAbsolute(relative)) {
+      return false;
+    }
+
+    // Also block if it IS the base directory to prevent accidental deletion of CWD
+    if (relative === '') {
+      return false;
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
+}
