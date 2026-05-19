@@ -19,7 +19,7 @@ import {
 import * as path from "path";
 import * as fs from "fs";
 import { TestSummary } from "../types.js";
-import { getDisplayTestFile } from "../lib/path-utils.js";
+import { getDisplayTestFile, isPathSafe } from "../lib/path-utils.js";
 import { forkExecArgvForScript } from "../lib/fork-ts-script.js";
 import "colors";
 
@@ -347,6 +347,12 @@ cli
       try {
         assertNoUnknownPositionalArgs(argv);
         assertBasenameFilterExclusivity(argv);
+
+        const check = (p: string, msg: string) => {
+          if (!isPathSafe(process.cwd(), p)) throw new Error(`Security Error: ${msg} '${p}' is outside CWD or points to it.`);
+        };
+        if (argv.coverage && argv.coverageDir) check(argv.coverageDir, 'Coverage directory');
+        if (argv.output) check(argv.output, 'Output file');
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
         console.error(msg);
