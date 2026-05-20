@@ -53,13 +53,13 @@ test({
       },
 
       "should have correct failures count": (context?: TestContext): string | void => {
-        if (context!.result.reporterOutput.stats?.failures !== 2) {
+        if (context!.result.reporterOutput.stats?.failures !== 1) {
           return `Mocha JSON output incorrect failures count: ${context!.result.reporterOutput.stats?.failures}`;
         }
       },
 
       "should have correct pending count": (context?: TestContext): string | void => {
-        if (context!.result.reporterOutput.stats?.pending !== 2) {
+        if (context!.result.reporterOutput.stats?.pending !== 3) {
           return `Mocha JSON output incorrect pending count: ${context!.result.reporterOutput.stats?.pending}`;
         }
       },

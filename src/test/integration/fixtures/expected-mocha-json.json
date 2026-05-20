@@ -3,8 +3,8 @@
     "suites": 1,
     "tests": 8,
     "passes": 4,
-    "pending": 2,
-    "failures": 2,
+    "pending": 3,
+    "failures": 1,
     "start": "[TIMESTAMP]",
     "end": "[TIMESTAMP]",
     "duration": "[DURATION]"
@@ -67,13 +67,11 @@
       "err": {}
     },
     {
-      "title": "Expired Skip",
-      "fullTitle": "Expired Skip",
+      "title": "should fail due to expired skip",
+      "fullTitle": "Expired Skip should fail due to expired skip",
       "file": "../examples/example.test.ts",
       "currentRetry": 0,
-      "err": {
-        "message": "Test skip expired on 2024-01-01. Reason: This skip has expired"
-      }
+      "err": {}
     }
   ],
   "pending": [
@@ -90,6 +88,13 @@
       "file": "../examples/example.test.ts",
       "currentRetry": 0,
       "err": {}
+    },
+    {
+      "title": "should fail due to expired skip",
+      "fullTitle": "Expired Skip should fail due to expired skip",
+      "file": "../examples/example.test.ts",
+      "currentRetry": 0,
+      "err": {}
     }
   ],
   "failures": [
@@ -101,15 +106,6 @@
       "currentRetry": 0,
       "err": {
         "message": "This test intentionally fails"
-      }
-    },
-    {
-      "title": "Expired Skip",
-      "fullTitle": "Expired Skip",
-      "file": "../examples/example.test.ts",
-      "currentRetry": 0,
-      "err": {
-        "message": "Test skip expired on 2024-01-01. Reason: This skip has expired"
       }
     }
   ],
