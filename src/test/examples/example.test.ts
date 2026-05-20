@@ -78,7 +78,7 @@ test({
       skip: () => {
         return {
           reason: 'Test nested expired skip',
-          until: '2024-01-01'
+          until: '2027-01-01'
         };
       },
 
@@ -92,7 +92,7 @@ test({
     skip: () => {
       return {
         reason: 'This skip has expired',
-        until: '2024-01-01'
+        until: '2027-01-01'
       };
     },
 

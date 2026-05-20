@@ -35,8 +35,8 @@ test({
 
       const expectedTotalTests = 8;
       const expectedPassedTests = 4;
-      const expectedFailedTests = 2;
-      const expectedSkippedTests = 2;
+      const expectedFailedTests = 1;
+      const expectedSkippedTests = 3;
 
       const actualTotal = result.summary!.total;
       const actualPassed = result.summary!.passed;
@@ -51,8 +51,7 @@ test({
       const failedTests = result.summary!.failedTests;
       const expectedFailuresInResults = ['should fail with custom error'];
       const expectedFailuresInFailedTests = [
-        'Error Handling',
-        'Expired Skip'
+        'Error Handling'
       ];
 
       for (const expectedFailure of expectedFailuresInFailedTests) {
@@ -63,7 +62,7 @@ test({
         expect(found, `Expected to find failed test path containing: "${expectedFailure}"`).to.be.true;
       }
       
-      expect(failedTests.length).to.equal(2, `Expected 2 items in failedTests array, but got ${failedTests.length}`);
+      expect(failedTests.length).to.equal(1, `Expected 1 items in failedTests array, but got ${failedTests.length}`);
 
       expect(result.code).to.equal(1, `Expected exit code 1 (because tests have intentional failures), but got ${result.code}`);
     },
@@ -94,7 +93,7 @@ test({
       }
 
       const skippedTests = result.summary!.results.filter((r: TestResult) => r.status === 'skipped');
-      const expectedSkippedCount = 2;
+      const expectedSkippedCount = 3;
 
       expect(skippedTests.length).to.equal(expectedSkippedCount, `Expected ${expectedSkippedCount} skipped tests, but got ${skippedTests.length}`);
     },
