@@ -1,0 +1,4 @@
+## 2026-05-22 - [Path Traversal and Arbitrary File Deletion]
+**Vulnerability:** CLI options like `--coverage-dir` and `--output` were used to delete arbitrary directories or write files outside the intended scope. For example, `fs.rmSync(config.coverage.directory, { recursive: true, force: true })` in `src/bin/run-tests.ts` would delete whatever was passed to it, including the CWD if `.` was used.
+**Learning:** `path.resolve` and `path.join` do not prevent directory traversal; they only normalize paths. Simple string checks for `..` are also insufficient as they can be bypassed or result in false positives.
+**Prevention:** Use `path.relative(baseDir, resolvedPath)` and check if the result is empty (equal to base), starts with `..`, or is absolute. This ensures the target is a strict subdirectory of the base. Always validate user-provided paths before performing destructive operations like `fs.rmSync`.
