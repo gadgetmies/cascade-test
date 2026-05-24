@@ -1,0 +1,4 @@
+## 2026-05-23 - [Path Traversal in Test Runner and Fixture Utils]
+**Vulnerability:** The test runner allowed arbitrary directory deletion via the `--coverage-dir` option and arbitrary file writing via the `--output` option when combined with path traversal sequences. Similarly, the `fixture-utils` library allowed reading and writing files outside the intended fixtures directory.
+**Learning:** Utilities that perform file system operations (like `fs.rmSync` or `fs.writeFileSync`) based on user-provided paths or test-provided fixture names are dangerous if they don't validate that the resolved path is within a safe boundary. `path.resolve` alone does not prevent traversal.
+**Prevention:** Use a robust path validation function like `isPathSafe` that resolves both the base directory and the target path, and then verifies using `path.relative` that the target is a subdirectory of the base and not the base itself.
