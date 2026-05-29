@@ -19,7 +19,7 @@ import {
 import * as path from "path";
 import * as fs from "fs";
 import { TestSummary } from "../types.js";
-import { getDisplayTestFile } from "../lib/path-utils.js";
+import { getDisplayTestFile, isPathSafe } from "../lib/path-utils.js";
 import { forkExecArgvForScript } from "../lib/fork-ts-script.js";
 import "colors";
 
@@ -151,6 +151,17 @@ const main = async (
     coverage?: CoverageOptions;
   } = {}
 ): Promise<void> => {
+  // Security: Validate paths
+  if (config.outputFile && !isPathSafe(config.outputFile)) {
+    console.error(`Security Error: Output file '${config.outputFile}' is outside the current working directory.`.red);
+    process.exit(1);
+  }
+
+  if (config.coverage?.enabled && !isPathSafe(config.coverage.directory)) {
+    console.error(`Security Error: Coverage directory '${config.coverage.directory}' is outside the current working directory.`.red);
+    process.exit(1);
+  }
+
   const resolvedTestPath = path.resolve(`${process.cwd()}/${testPath}`);
   const candidates = recursivelyFindByRegex(
     resolvedTestPath,
