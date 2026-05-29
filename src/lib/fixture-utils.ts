@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
+import { isPathSafe } from "./path-utils.js";
 import { FixtureConfig } from "../types.js";
 import { diff } from "jest-diff";
 import pkg from "lodash";
@@ -36,7 +37,21 @@ function getFixturePath(
   config: Required<FixtureConfig>
 ): string {
   const fixtureDir = getFixtureDir(callerFile, config.fixturesDir);
-  return path.join(fixtureDir, fixtureName);
+
+  // Security: Validate that fixturesDir is within the test directory
+  const testDir = path.dirname(callerFile.startsWith("file://") ? callerFile.replace("file://", "") : callerFile);
+  if (!isPathSafe(fixtureDir, testDir)) {
+    throw new Error(`Security Error: Fixture directory '${config.fixturesDir}' is outside the test directory.`);
+  }
+
+  const fixturePath = path.join(fixtureDir, fixtureName);
+
+  // Security: Validate that the final fixture path is within the fixture directory
+  if (!isPathSafe(fixturePath, fixtureDir)) {
+    throw new Error(`Security Error: Fixture name '${fixtureName}' attempts to traverse outside the fixture directory.`);
+  }
+
+  return fixturePath;
 }
 
 function ensureFixtureDirExists(fixturePath: string): void {
