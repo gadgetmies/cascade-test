@@ -1,5 +1,13 @@
 import * as path from 'path';
 
+export function isPathSafe(baseDir: string, targetPath: string): boolean {
+  const resolvedBase = path.resolve(baseDir);
+  const resolvedTarget = path.resolve(baseDir, targetPath);
+  if (resolvedBase === resolvedTarget) return false;
+  const relative = path.relative(resolvedBase, resolvedTarget);
+  return !(relative === '..' || relative.startsWith('..' + path.sep) || path.isAbsolute(relative));
+}
+
 export function getDisplayTestFile(testFile: string, basePath?: string): string {
   try {
     let actualPath = testFile;
