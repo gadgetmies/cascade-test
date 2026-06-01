@@ -1,0 +1,4 @@
+## 2026-06-01 - [HIGH] Fix Path Traversal in CLI and Fixtures
+**Vulnerability:** The test runner allowed specifying `--coverage-dir` and `--output` paths outside the current working directory. Specifically, `fs.rmSync` was called on the `--coverage-dir` without validation, allowing arbitrary directory deletion. Similarly, `assertFixture` allowed reading/writing files outside the intended fixtures directory via path traversal in fixture names.
+**Learning:** `path.join` and `path.resolve` do not prevent directory traversal. Validation using `path.relative(baseDir, resolvedPath)` and checking for '..' prefixes or absolute results is necessary.
+**Prevention:** Use a robust path validation utility like `isPathSafe` to ensure all user-controlled paths are constrained within safe boundaries before performing filesystem operations.
