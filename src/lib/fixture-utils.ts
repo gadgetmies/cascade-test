@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { FixtureConfig } from "../types.js";
+import { isPathSafe } from "./path-utils.js";
 import { diff } from "jest-diff";
 import pkg from "lodash";
 const { isEqual } = pkg;
@@ -36,7 +37,18 @@ function getFixturePath(
   config: Required<FixtureConfig>
 ): string {
   const fixtureDir = getFixtureDir(callerFile, config.fixturesDir);
-  return path.join(fixtureDir, fixtureName);
+
+  if (path.isAbsolute(fixtureName)) {
+    throw new Error(`Security Error: Absolute fixture paths are not allowed: ${fixtureName}`);
+  }
+
+  const finalPath = path.join(fixtureDir, fixtureName);
+
+  if (!isPathSafe(fixtureName, fixtureDir)) {
+    throw new Error(`Security Error: Fixture path '${fixtureName}' is outside the fixtures directory.`);
+  }
+
+  return finalPath;
 }
 
 function ensureFixtureDirExists(fixturePath: string): void {
