@@ -1,0 +1,4 @@
+## 2026-06-02 - Path Traversal in Test Runner and Fixtures
+**Vulnerability:** The test runner used `--coverage-dir` and `--output` options without validating if they were within the current working directory. Additionally, `assertFixture` allowed absolute paths and directory traversal.
+**Learning:** `path.resolve` and `path.join` do not prevent directory traversal. Recursive deletion of a user-provided directory (`fs.rmSync(config.coverage.directory, { recursive: true })`) is extremely dangerous without strict path validation.
+**Prevention:** Use a robust `isPathSafe` utility that resolves paths and checks them using `path.relative` to ensure they stay within an intended base directory. Block absolute paths and paths that resolve to the base directory itself if they are targets for deletion.
