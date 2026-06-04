@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { FixtureConfig } from "../types.js";
+import { isPathSafe } from "./path-utils.js";
 import { diff } from "jest-diff";
 import pkg from "lodash";
 const { isEqual } = pkg;
@@ -36,6 +37,12 @@ function getFixturePath(
   config: Required<FixtureConfig>
 ): string {
   const fixtureDir = getFixtureDir(callerFile, config.fixturesDir);
+
+  // Security check: ensure fixtureName is not absolute and does not traverse outside fixtureDir
+  if (path.isAbsolute(fixtureName) || !isPathSafe(fixtureDir, fixtureName)) {
+    throw new Error(`Security Error: Invalid fixture name '${fixtureName}'. Path traversal or absolute paths are not allowed.`);
+  }
+
   return path.join(fixtureDir, fixtureName);
 }
 
