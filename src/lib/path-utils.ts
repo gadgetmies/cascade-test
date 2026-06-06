@@ -13,3 +13,13 @@ export function getDisplayTestFile(testFile: string, basePath?: string): string 
     return testFile;
   }
 }
+
+/**
+ * Validates if a target path is safely contained within a base directory.
+ */
+export function isPathSafe(baseDir: string, targetPath: string): boolean {
+  try {
+    const rel = path.relative(path.resolve(baseDir), path.resolve(baseDir, targetPath));
+    return rel !== '' && !rel.startsWith('..') && !path.isAbsolute(rel);
+  } catch { return false; }
+}
