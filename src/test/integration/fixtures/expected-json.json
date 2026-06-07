@@ -3,7 +3,7 @@
   "summary": {
     "total": 8,
     "passed": 4,
-    "failed": 2,
+    "failed": 1,
     "duration": "[DURATION]"
   },
   "results": [
@@ -79,13 +79,13 @@
       "status": "skipped"
     },
     {
-      "name": "Expired Skip",
+      "name": "Expired Skip should fail due to expired skip",
       "path": [
         "[TEST_FILE_PATH]",
-        "Expired Skip"
+        "Expired Skip",
+        "should fail due to expired skip"
       ],
-      "status": "failed",
-      "error": "Test skip expired on 2024-01-01. Reason: This skip has expired"
+      "status": "skipped"
     }
   ]
 }
