@@ -1,0 +1,4 @@
+## 2026-06-09 - Path Traversal in CLI and Fixtures
+**Vulnerability:** CLI options `--coverage-dir` and `--output`, as well as `assertFixture` names, were susceptible to path traversal. A malicious user or test could specify a path like `../important-dir`, causing the framework to potentially delete or overwrite files outside the project root (e.g., during coverage cleanup).
+**Learning:** `path.resolve` and `path.join` do not prevent escaping the base directory. Using `path.relative` and checking for `..` or absolute paths is necessary to ensure a path remains within a safe boundary. Blocking the base directory itself (relative path is empty) is also important to prevent deleting the current working directory.
+**Prevention:** Use the `isPathSafe` utility to validate all user-supplied paths against a known safe base directory before performing file system operations, especially destructive ones like `fs.rmSync`.
