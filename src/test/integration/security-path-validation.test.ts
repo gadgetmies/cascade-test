@@ -10,8 +10,9 @@ test({
     },
     'Security Path Validation': {
         'should block unsafe --coverage-dir': () => {
-            const result = spawnSync('node', [
-                'dist/bin/run-tests.js',
+            const result = spawnSync('npx', [
+                'tsx',
+                'src/bin/run-tests.ts',
                 'src/test/examples',
                 '--coverage',
                 '--coverage-dir',
@@ -27,8 +28,9 @@ test({
         },
 
         'should block unsafe --output': () => {
-            const result = spawnSync('node', [
-                'dist/bin/run-tests.js',
+            const result = spawnSync('npx', [
+                'tsx',
+                'src/bin/run-tests.ts',
                 'src/test/examples',
                 '--reporter',
                 'json',
