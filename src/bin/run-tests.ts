@@ -19,7 +19,7 @@ import {
 import * as path from "path";
 import * as fs from "fs";
 import { TestSummary } from "../types.js";
-import { getDisplayTestFile } from "../lib/path-utils.js";
+import { getDisplayTestFile, isPathSafe } from "../lib/path-utils.js";
 import { forkExecArgvForScript } from "../lib/fork-ts-script.js";
 import "colors";
 
@@ -174,14 +174,33 @@ const main = async (
   const allTestSummaries: TestSummary[] = [];
 
   if (config.coverage?.enabled) {
-    console.log("\nCode coverage enabled".green);
-    console.log(`Coverage directory: ${config.coverage.directory}`.yellow);
-    console.log(`Coverage reporters: ${config.coverage.reporter.join(", ")}`.yellow);
-    
-    if (fs.existsSync(config.coverage.directory)) {
-      fs.rmSync(config.coverage.directory, { recursive: true, force: true });
+    const coverageDir = config.coverage.directory;
+
+    // Security check: ensure coverage directory is safe and not the CWD itself
+    const isSafe = isPathSafe(coverageDir);
+    const isCwd = path.resolve(coverageDir) === process.cwd();
+
+    if (!isSafe || isCwd) {
+      console.error(`\nSecurity Error: Coverage directory '${coverageDir}' is outside the current working directory or is the CWD itself.`.red);
+      process.exit(1);
     }
-    fs.mkdirSync(config.coverage.directory, { recursive: true });
+
+    console.log("\nCode coverage enabled".green);
+    console.log(`Coverage directory: ${coverageDir}`.yellow);
+    console.log(`Coverage reporters: ${config.coverage.reporter.join(", ")}`.yellow);
+
+    if (fs.existsSync(coverageDir)) {
+      fs.rmSync(coverageDir, { recursive: true, force: true });
+    }
+    fs.mkdirSync(coverageDir, { recursive: true });
+  }
+
+  // Security check: ensure output file path is safe if provided
+  if (config.outputFile) {
+    if (!isPathSafe(config.outputFile)) {
+      console.error(`\nSecurity Error: Output file path '${config.outputFile}' is outside the current working directory.`.red);
+      process.exit(1);
+    }
   }
 
   console.log("Found test files matching criteria:\n");
