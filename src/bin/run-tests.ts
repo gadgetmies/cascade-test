@@ -19,7 +19,7 @@ import {
 import * as path from "path";
 import * as fs from "fs";
 import { TestSummary } from "../types.js";
-import { getDisplayTestFile } from "../lib/path-utils.js";
+import { getDisplayTestFile, isPathSafe } from "../lib/path-utils.js";
 import { forkExecArgvForScript } from "../lib/fork-ts-script.js";
 import "colors";
 
@@ -369,6 +369,24 @@ cli
         basenameFilter = { kind: "regex", re: new RegExp(argv.regex) };
       } else if (argv.glob !== undefined) {
         basenameFilter = { kind: "glob", pattern: argv.glob };
+      }
+
+      // Security Check: Path Validation
+      const cwd = process.cwd();
+      if (argv.output && !isPathSafe(cwd, argv.output)) {
+        console.error(`Security Error: Output path '${argv.output}' is outside the current working directory.`.red);
+        process.exit(1);
+      }
+
+      if (coverageConfig) {
+        if (!isPathSafe(cwd, coverageConfig.directory)) {
+          console.error(`Security Error: Coverage directory '${coverageConfig.directory}' is outside the current working directory.`.red);
+          process.exit(1);
+        }
+        if (path.resolve(coverageConfig.directory) === cwd) {
+          console.error(`Security Error: Coverage directory cannot be the current working directory.`.red);
+          process.exit(1);
+        }
       }
 
       return main(argv.path, basenameFilter, {
