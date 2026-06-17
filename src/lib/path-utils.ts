@@ -13,3 +13,9 @@ export function getDisplayTestFile(testFile: string, basePath?: string): string 
     return testFile;
   }
 }
+
+export function isPathSafe(targetPath: string, baseDir: string = process.cwd()): boolean {
+  const resolvedPath = path.resolve(baseDir, targetPath);
+  const relative = path.relative(baseDir, resolvedPath);
+  return (relative === "" || !relative.startsWith("..")) && !path.isAbsolute(relative);
+}
