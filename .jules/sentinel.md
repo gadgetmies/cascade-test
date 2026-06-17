@@ -1,0 +1,4 @@
+## 2026-06-16 - Path Traversal in CLI and Fixture Utilities
+**Vulnerability:** Path traversal via `--coverage-dir` and `--output` CLI arguments, and arbitrary file read/write via fixture names in `fixture-utils`. These could lead to information disclosure or arbitrary file deletion (specifically via `fs.rmSync` on the coverage directory).
+**Learning:** `path.resolve` does not prevent path traversal if the resulting path is not validated against a base directory boundary. Additionally, tools performing recursive cleanup (like `rmSync`) are particularly dangerous if the target path is user-controlled.
+**Prevention:** Use a utility like `isPathSafe` that resolves the path and then uses `path.relative` to ensure the result is within the intended base directory (checking for `..` prefixes). Explicitly block using the current working directory as a target for destructive operations like recursive deletion.
