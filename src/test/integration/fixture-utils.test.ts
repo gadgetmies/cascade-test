@@ -31,8 +31,6 @@ test({
       assertFixture("user-data.json", testData, {
         ...normalizeConfig(normalizationConfigs.json),
       });
-
-      return null;
     },
 
     "should demonstrate environment variable behavior": {
@@ -136,6 +134,27 @@ test({
 
         assertFixture("config-data.json", context!.fixtureData);
       },
+    },
+
+    "should prevent path traversal": () => {
+      try {
+        readFixture("../outside.json");
+        return "Should have thrown an error for path traversal";
+      } catch (e: any) {
+        if (!e.message.includes("path traversal detected")) {
+          return `Expected path traversal error, but got: ${e.message}`;
+        }
+      }
+
+      try {
+        assertFixture("../../secret.json", {});
+        return "Should have thrown an error for path traversal";
+      } catch (e: any) {
+        if (!e.message.includes("path traversal detected")) {
+          return `Expected path traversal error, but got: ${e.message}`;
+        }
+      }
+      return;
     },
   },
 });
