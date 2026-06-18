@@ -137,5 +137,17 @@ test({
         assertFixture("config-data.json", context!.fixtureData);
       },
     },
+
+    "should prevent path traversal": () => {
+      try {
+        readFixture("../package.json");
+        return "Should have thrown an error for path traversal";
+      } catch (error: any) {
+        if (!error.message.includes("Potential path traversal detected")) {
+          return `Expected traversal error, got: ${error.message}`;
+        }
+      }
+      return;
+    },
   },
 });
