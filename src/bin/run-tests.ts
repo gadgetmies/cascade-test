@@ -19,7 +19,7 @@ import {
 import * as path from "path";
 import * as fs from "fs";
 import { TestSummary } from "../types.js";
-import { getDisplayTestFile } from "../lib/path-utils.js";
+import { getDisplayTestFile, isPathSafe } from "../lib/path-utils.js";
 import { forkExecArgvForScript } from "../lib/fork-ts-script.js";
 import "colors";
 
@@ -174,6 +174,19 @@ const main = async (
   const allTestSummaries: TestSummary[] = [];
 
   if (config.coverage?.enabled) {
+    // Security check: Ensure coverage directory is safe
+    if (!isPathSafe(process.cwd(), config.coverage.directory)) {
+      console.error(`Security Error: Coverage directory '${config.coverage.directory}' is outside the current working directory.`.red);
+      process.exit(1);
+    }
+
+    // Specifically prevent using CWD as coverage directory as it gets deleted
+    const resolvedCoverageDir = path.resolve(process.cwd(), config.coverage.directory);
+    if (resolvedCoverageDir === process.cwd()) {
+      console.error(`Security Error: Cannot use current working directory as coverage directory.`.red);
+      process.exit(1);
+    }
+
     console.log("\nCode coverage enabled".green);
     console.log(`Coverage directory: ${config.coverage.directory}`.yellow);
     console.log(`Coverage reporters: ${config.coverage.reporter.join(", ")}`.yellow);
@@ -182,6 +195,12 @@ const main = async (
       fs.rmSync(config.coverage.directory, { recursive: true, force: true });
     }
     fs.mkdirSync(config.coverage.directory, { recursive: true });
+  }
+
+  // Security check: Ensure output file is safe if provided
+  if (config.outputFile && !isPathSafe(process.cwd(), config.outputFile)) {
+    console.error(`Security Error: Output path '${config.outputFile}' is outside the current working directory.`.red);
+    process.exit(1);
   }
 
   console.log("Found test files matching criteria:\n");
