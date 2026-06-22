@@ -1,0 +1,4 @@
+## 2026-06-22 - [Path Traversal in Fixture Utilities]
+**Vulnerability:** The `assertFixture` and `createFixture` utilities in `src/lib/fixture-utils.ts` were vulnerable to path traversal attacks because they did not validate that the provided fixture name remained within the intended fixtures directory. An attacker (or a malicious test) could read or write arbitrary files by using `..` in the fixture name.
+**Learning:** `path.join` and `path.resolve` alone do not prevent path traversal. If a user-controlled string containing `..` is joined with a base directory, the resulting path can point outside that base.
+**Prevention:** Always validate resolved paths using `path.relative` to ensure they are contained within the intended base directory. Use a reusable utility like `isPathSafe` for this purpose.
