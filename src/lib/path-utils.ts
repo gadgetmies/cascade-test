@@ -13,3 +13,17 @@ export function getDisplayTestFile(testFile: string, basePath?: string): string 
     return testFile;
   }
 }
+
+/**
+ * Check if a target path is safe (within the base directory)
+ */
+export function isPathSafe(baseDir: string, targetPath: string): boolean {
+  const resolvedBase = path.resolve(baseDir);
+  const resolvedTarget = path.resolve(baseDir, targetPath);
+  const relative = path.relative(resolvedBase, resolvedTarget);
+
+  return (
+    relative === "" ||
+    (!relative.startsWith(".." + path.sep) && relative !== "..")
+  );
+}
