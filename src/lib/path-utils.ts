@@ -4,8 +4,14 @@ export function isPathSafe(baseDir: string, targetPath: string): boolean {
   const resolvedBase = path.resolve(baseDir);
   const resolvedTarget = path.resolve(baseDir, targetPath);
   const relative = path.relative(resolvedBase, resolvedTarget);
+
+  if (path.isAbsolute(relative)) {
+    return false;
+  }
+
   return (
-    relative === "" || (!relative.startsWith(".." + path.sep) && relative !== "..")
+    relative === "" ||
+    (!relative.startsWith(".." + path.sep) && relative !== "..")
   );
 }
 
