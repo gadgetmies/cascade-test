@@ -19,7 +19,7 @@ import {
 import * as path from "path";
 import * as fs from "fs";
 import { TestSummary } from "../types.js";
-import { getDisplayTestFile } from "../lib/path-utils.js";
+import { getDisplayTestFile, isPathSafe } from "../lib/path-utils.js";
 import { forkExecArgvForScript } from "../lib/fork-ts-script.js";
 import "colors";
 
@@ -355,7 +355,7 @@ cli
       const coverageConfig: CoverageOptions | undefined = argv.coverage
         ? {
             enabled: true,
-            reporter: argv.coverageReporter as string[] || ["text", "html"],
+            reporter: (argv.coverageReporter as string[]) || ["text", "html"],
             directory: argv.coverageDir || "coverage",
             exclude: argv.coverageExclude as string[] | undefined,
             include: argv.coverageInclude as string[] | undefined,
@@ -363,6 +363,25 @@ cli
             skipFull: argv.coverageSkipFull,
           }
         : undefined;
+
+      if (argv.output && !isPathSafe(process.cwd(), argv.output)) {
+        console.error(
+          `Security Error: Output path '${argv.output}' is outside the current working directory.`
+            .red
+        );
+        process.exit(1);
+      }
+
+      if (
+        coverageConfig?.enabled &&
+        !isPathSafe(process.cwd(), coverageConfig.directory)
+      ) {
+        console.error(
+          `Security Error: Coverage directory '${coverageConfig.directory}' is outside the current working directory.`
+            .red
+        );
+        process.exit(1);
+      }
 
       let basenameFilter: BasenameFilter | undefined;
       if (argv.regex !== undefined) {
