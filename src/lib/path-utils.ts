@@ -13,3 +13,20 @@ export function getDisplayTestFile(testFile: string, basePath?: string): string 
     return testFile;
   }
 }
+
+export function isPathSafe(baseDir: string, targetPath: string): boolean {
+  const resolvedBase = path.resolve(baseDir);
+  const resolvedTarget = path.resolve(baseDir, targetPath);
+
+  // On Windows, if baseDir and targetPath are on different drives,
+  // path.relative returns an absolute path of the target.
+  if (path.isAbsolute(path.relative(resolvedBase, resolvedTarget))) {
+    return false;
+  }
+
+  const relative = path.relative(resolvedBase, resolvedTarget);
+
+  return (
+    relative === "" || (!relative.startsWith(".." + path.sep) && relative !== "..")
+  );
+}

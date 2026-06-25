@@ -19,7 +19,7 @@ import {
 import * as path from "path";
 import * as fs from "fs";
 import { TestSummary } from "../types.js";
-import { getDisplayTestFile } from "../lib/path-utils.js";
+import { getDisplayTestFile, isPathSafe } from "../lib/path-utils.js";
 import { forkExecArgvForScript } from "../lib/fork-ts-script.js";
 import "colors";
 
@@ -174,14 +174,31 @@ const main = async (
   const allTestSummaries: TestSummary[] = [];
 
   if (config.coverage?.enabled) {
+    const coverageDir = config.coverage.directory;
+    if (!isPathSafe(process.cwd(), coverageDir)) {
+      console.error(`Security Error: Coverage directory '${coverageDir}' is outside the current working directory.`.red);
+      process.exit(1);
+    }
+    if (path.resolve(coverageDir) === process.cwd()) {
+      console.error("Security Error: Cannot use current working directory as coverage directory.".red);
+      process.exit(1);
+    }
+
     console.log("\nCode coverage enabled".green);
-    console.log(`Coverage directory: ${config.coverage.directory}`.yellow);
+    console.log(`Coverage directory: ${coverageDir}`.yellow);
     console.log(`Coverage reporters: ${config.coverage.reporter.join(", ")}`.yellow);
     
-    if (fs.existsSync(config.coverage.directory)) {
-      fs.rmSync(config.coverage.directory, { recursive: true, force: true });
+    if (fs.existsSync(coverageDir)) {
+      fs.rmSync(coverageDir, { recursive: true, force: true });
     }
-    fs.mkdirSync(config.coverage.directory, { recursive: true });
+    fs.mkdirSync(coverageDir, { recursive: true });
+  }
+
+  if (config.outputFile) {
+    if (!isPathSafe(process.cwd(), config.outputFile)) {
+      console.error(`Security Error: Output path '${config.outputFile}' is outside the current working directory.`.red);
+      process.exit(1);
+    }
   }
 
   console.log("Found test files matching criteria:\n");
