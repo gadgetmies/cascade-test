@@ -1,0 +1,4 @@
+## 2026-06-25 - [Path Traversal in Test Runner and Fixture Utilities]
+**Vulnerability:** Path traversal and arbitrary file deletion/writing via `--coverage-dir`, `--output`, and test fixtures.
+**Learning:** `path.resolve` and `path.join` do not prevent directory traversal. `fs.rmSync(path, { recursive: true })` on a user-provided path can lead to accidental or malicious deletion of the entire project directory if the path is set to `.`. On Windows, `path.relative` between different drives returns an absolute path, which needs special handling.
+**Prevention:** Implement a central `isPathSafe` utility using `path.relative` and check for `..` prefixes. Specifically block the current working directory from being used as a target for recursive deletion. Harden `isPathSafe` for cross-drive scenarios by checking `path.isAbsolute(path.relative(...))`.
