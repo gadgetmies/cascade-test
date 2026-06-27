@@ -19,7 +19,7 @@ import {
 import * as path from "path";
 import * as fs from "fs";
 import { TestSummary } from "../types.js";
-import { getDisplayTestFile } from "../lib/path-utils.js";
+import { getDisplayTestFile, isPathSafe } from "../lib/path-utils.js";
 import { forkExecArgvForScript } from "../lib/fork-ts-script.js";
 import "colors";
 
@@ -352,6 +352,11 @@ cli
         console.error(msg);
         process.exit(1);
       }
+      if (argv.output && !isPathSafe(argv.output)) {
+        console.error(`Security Error: Output path '${argv.output}' is outside the current working directory.`.red);
+        process.exit(1);
+      }
+
       const coverageConfig: CoverageOptions | undefined = argv.coverage
         ? {
             enabled: true,
@@ -363,6 +368,17 @@ cli
             skipFull: argv.coverageSkipFull,
           }
         : undefined;
+
+      if (coverageConfig) {
+        if (!isPathSafe(coverageConfig.directory)) {
+          if (path.resolve(coverageConfig.directory) === process.cwd()) {
+            console.error(`Security Error: Cannot use current working directory as coverage directory.`.red);
+          } else {
+            console.error(`Security Error: Coverage directory '${coverageConfig.directory}' is outside the current working directory.`.red);
+          }
+          process.exit(1);
+        }
+      }
 
       let basenameFilter: BasenameFilter | undefined;
       if (argv.regex !== undefined) {
