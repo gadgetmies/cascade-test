@@ -19,7 +19,7 @@ import {
 import * as path from "path";
 import * as fs from "fs";
 import { TestSummary } from "../types.js";
-import { getDisplayTestFile } from "../lib/path-utils.js";
+import { getDisplayTestFile, isPathSafe } from "../lib/path-utils.js";
 import { forkExecArgvForScript } from "../lib/fork-ts-script.js";
 import "colors";
 
@@ -347,6 +347,26 @@ cli
       try {
         assertNoUnknownPositionalArgs(argv);
         assertBasenameFilterExclusivity(argv);
+
+        if (argv.output && !isPathSafe(process.cwd(), argv.output)) {
+          console.error(
+            `Security Error: Output path '${argv.output}' is outside the current working directory.`
+              .red
+          );
+          process.exit(1);
+        }
+
+        if (
+          argv.coverage &&
+          argv.coverageDir &&
+          !isPathSafe(process.cwd(), argv.coverageDir)
+        ) {
+          console.error(
+            `Security Error: Coverage directory '${argv.coverageDir}' is outside the current working directory.`
+              .red
+          );
+          process.exit(1);
+        }
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
         console.error(msg);
