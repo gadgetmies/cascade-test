@@ -1,0 +1,4 @@
+## 2026-06-26 - [Path Traversal in Coverage and Output Paths]
+**Vulnerability:** The CLI runner accepted user-provided paths for `--coverage-dir` and `--output` without validation. Since the framework performs destructive operations (like `fs.rmSync` on the coverage directory), a malicious or accidental path (e.g., `/`, `../`, or `.`) could lead to significant data loss or unauthorized file writes.
+**Learning:** Tools that perform cleanup or write to user-controlled paths must always validate those paths against a safe base directory (usually the CWD). `path.resolve` alone is not enough, as it still allows resolving to paths outside the intended root.
+**Prevention:** Use a robust path safety check that ensures the resolved path is a child of the intended base directory and optionally rejects the base directory itself if it's used for destructive operations.
