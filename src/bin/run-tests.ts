@@ -373,20 +373,13 @@ cli
 
       // Security Check: Validate output and coverage paths
       if (argv.output && !isPathSafe(process.cwd(), argv.output)) {
-        console.error(`Security Error: Output path '${argv.output}' is outside the current working directory.`.red);
+        console.error(`Security Error: Output path '${argv.output}' is outside CWD.`.red);
         process.exit(1);
       }
-
-      if (coverageConfig) {
-        if (!isPathSafe(process.cwd(), coverageConfig.directory)) {
-          // Additional check for CWD to prevent dangerous deletions
-          if (path.resolve(process.cwd(), coverageConfig.directory) === process.cwd()) {
-            console.error(`Security Error: Cannot use current working directory as coverage directory.`.red);
-          } else {
-            console.error(`Security Error: Coverage directory '${coverageConfig.directory}' is outside the current working directory.`.red);
-          }
-          process.exit(1);
-        }
+      if (coverageConfig && !isPathSafe(process.cwd(), coverageConfig.directory)) {
+        const isCwd = path.resolve(process.cwd(), coverageConfig.directory) === process.cwd();
+        console.error(`Security Error: ${isCwd ? "Cannot use CWD as coverage directory." : `Coverage directory '${coverageConfig.directory}' is outside CWD.`}`.red);
+        process.exit(1);
       }
 
       return main(argv.path, basenameFilter, {
