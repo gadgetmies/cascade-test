@@ -13,3 +13,18 @@ export function getDisplayTestFile(testFile: string, basePath?: string): string 
     return testFile;
   }
 }
+
+/**
+ * Validates that a target path is safe and contained within a base directory.
+ * Prevents directory traversal and usage of the base directory itself.
+ */
+export function isPathSafe(baseDir: string, targetPath: string): boolean {
+  const resolvedPath = path.resolve(baseDir, targetPath);
+  const rel = path.relative(baseDir, resolvedPath);
+  return (
+    rel !== "" &&
+    !rel.startsWith(".." + path.sep) &&
+    rel !== ".." &&
+    !path.isAbsolute(rel)
+  );
+}
