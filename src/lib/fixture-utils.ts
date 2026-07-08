@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
+import { isPathSafe } from "./path-utils.js";
 import { FixtureConfig } from "../types.js";
 import { diff } from "jest-diff";
 import pkg from "lodash";
@@ -36,6 +37,9 @@ function getFixturePath(
   config: Required<FixtureConfig>
 ): string {
   const fixtureDir = getFixtureDir(callerFile, config.fixturesDir);
+  if (!isPathSafe(fixtureDir, fixtureName)) {
+    throw new Error(`Security Error: Fixture name '${fixtureName}' is outside fixtures directory.`);
+  }
   return path.join(fixtureDir, fixtureName);
 }
 

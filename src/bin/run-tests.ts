@@ -19,7 +19,7 @@ import {
 import * as path from "path";
 import * as fs from "fs";
 import { TestSummary } from "../types.js";
-import { getDisplayTestFile } from "../lib/path-utils.js";
+import { getDisplayTestFile, isPathSafe } from "../lib/path-utils.js";
 import { forkExecArgvForScript } from "../lib/fork-ts-script.js";
 import "colors";
 
@@ -352,10 +352,15 @@ cli
         console.error(msg);
         process.exit(1);
       }
+      if (argv.output && !isPathSafe(process.cwd(), argv.output)) {
+        console.error(`Security Error: Output path '${argv.output}' is outside CWD.`);
+        process.exit(1);
+      }
+
       const coverageConfig: CoverageOptions | undefined = argv.coverage
         ? {
             enabled: true,
-            reporter: argv.coverageReporter as string[] || ["text", "html"],
+            reporter: (argv.coverageReporter as string[]) || ["text", "html"],
             directory: argv.coverageDir || "coverage",
             exclude: argv.coverageExclude as string[] | undefined,
             include: argv.coverageInclude as string[] | undefined,
@@ -363,6 +368,18 @@ cli
             skipFull: argv.coverageSkipFull,
           }
         : undefined;
+
+      if (coverageConfig) {
+        if (!isPathSafe(process.cwd(), coverageConfig.directory)) {
+          const rel = path.relative(process.cwd(), path.resolve(process.cwd(), coverageConfig.directory));
+          if (rel === "") {
+             console.error("Security Error: Cannot use CWD as coverage directory.");
+          } else {
+             console.error(`Security Error: Coverage directory '${coverageConfig.directory}' is outside CWD.`);
+          }
+          process.exit(1);
+        }
+      }
 
       let basenameFilter: BasenameFilter | undefined;
       if (argv.regex !== undefined) {
