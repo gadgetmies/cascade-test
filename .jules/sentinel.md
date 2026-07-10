@@ -1,0 +1,4 @@
+## 2026-07-10 - [Path Traversal in CLI and Fixture Utils]
+**Vulnerability:** User-provided paths for coverage reports and test result outputs, as well as test-provided fixture names, were not validated for directory traversal. This allowed attackers to overwrite or create files outside the intended directories (e.g., deleting CWD by pointing coverage-dir to it).
+**Learning:** Implicit path joining with `path.join` or `path.resolve` does not prevent a user from using `..` to escape the base directory. Explicit validation using `path.relative` is required to ensure the resolved path remains within the expected scope.
+**Prevention:** Use a dedicated `isPathSafe` utility to verify that any externally-provided file path resolves to a location within the intended base directory and is not the base directory itself.
