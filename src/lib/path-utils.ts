@@ -13,3 +13,11 @@ export function getDisplayTestFile(testFile: string, basePath?: string): string 
     return testFile;
   }
 }
+
+export function isPathSafe(baseDir: string, targetPath: string): boolean {
+  const resolvedBase = path.resolve(baseDir);
+  const resolvedTarget = path.resolve(baseDir, targetPath);
+  const rel = path.relative(resolvedBase, resolvedTarget);
+
+  return rel !== '' && !rel.startsWith('..' + path.sep) && rel !== '..';
+}
