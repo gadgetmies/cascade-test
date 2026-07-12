@@ -1,0 +1,4 @@
+## 2026-07-10 - [Path Traversal in CLI and Fixtures]
+**Vulnerability:** Path traversal in `--coverage-dir`, `--output`, and fixture names could allow reading or deleting files outside the intended directories.
+**Learning:** Implicit path joining and `path.resolve` do not prevent traversal; explicit validation with `path.relative` is required to ensure target paths remain within a safe base directory. Rejection of the base directory itself (`rel === ""`) is a useful extra safety measure for operations that perform recursive deletions, but should be applied selectively to avoid breaking legitimate use cases like specifying an output file in the current directory.
+**Prevention:** Use a utility like `isPathSafe` to validate all user-provided paths against a known safe base directory before any file system operations.
