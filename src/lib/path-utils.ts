@@ -13,3 +13,15 @@ export function getDisplayTestFile(testFile: string, basePath?: string): string 
     return testFile;
   }
 }
+
+/**
+ * Security: Validate path to prevent traversal attacks.
+ * Ensures that the targetPath, when resolved against baseDir, remains within baseDir.
+ */
+export function isPathSafe(baseDir: string, targetPath: string): boolean {
+  const resolvedBase = path.resolve(baseDir);
+  const resolvedTarget = path.resolve(baseDir, targetPath);
+  const rel = path.relative(resolvedBase, resolvedTarget);
+
+  return !rel.startsWith('..' + path.sep) && rel !== '..';
+}
