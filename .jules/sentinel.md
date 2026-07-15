@@ -1,0 +1,4 @@
+## 2026-07-15 - [Path Traversal in Fixture Loading]
+**Vulnerability:** The `fixture-utils.ts` library was vulnerable to path traversal because it did not validate that the `fixtureName` provided by the user (or test) remained within the intended `fixturesDir`. An attacker or a malicious test could access any file on the system that the Node.js process had permissions to read/write by using `..` segments.
+**Learning:** Functions that join user-provided strings with base directories (like `path.join(base, input)`) are inherently risky if `input` is not validated. `path.resolve` and `path.join` do NOT prevent escaping the base directory.
+**Prevention:** Use a helper like `isPathSafe(baseDir, targetPath)` that resolves the final path and ensures it still starts with the `baseDir` (or is a descendant of it) using `path.relative`. Specifically, check that the relative path does not start with `..`.
