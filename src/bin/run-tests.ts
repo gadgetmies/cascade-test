@@ -19,7 +19,7 @@ import {
 import * as path from "path";
 import * as fs from "fs";
 import { TestSummary } from "../types.js";
-import { getDisplayTestFile } from "../lib/path-utils.js";
+import { getDisplayTestFile, isPathSafe } from "../lib/path-utils.js";
 import { forkExecArgvForScript } from "../lib/fork-ts-script.js";
 import "colors";
 
@@ -173,7 +173,22 @@ const main = async (
   const exitStatuses: TestResult[] = [];
   const allTestSummaries: TestSummary[] = [];
 
+  if (config.outputFile && !isPathSafe(config.outputFile)) {
+    console.error(`Security Error: Output path '${config.outputFile}' is outside CWD.`.red);
+    process.exit(1);
+  }
+
   if (config.coverage?.enabled) {
+    const coverageDir = config.coverage.directory || "coverage";
+    if (!isPathSafe(coverageDir)) {
+      console.error(`Security Error: Coverage directory '${coverageDir}' is outside CWD.`.red);
+      process.exit(1);
+    }
+    if (path.resolve(coverageDir) === process.cwd()) {
+      console.error(`Security Error: Cannot use CWD as coverage directory.`.red);
+      process.exit(1);
+    }
+
     console.log("\nCode coverage enabled".green);
     console.log(`Coverage directory: ${config.coverage.directory}`.yellow);
     console.log(`Coverage reporters: ${config.coverage.reporter.join(", ")}`.yellow);
