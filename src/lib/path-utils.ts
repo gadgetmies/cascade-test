@@ -1,10 +1,11 @@
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 
 export function getDisplayTestFile(testFile: string, basePath?: string): string {
   try {
     let actualPath = testFile;
     if (testFile.startsWith('file://')) {
-      actualPath = testFile.replace('file://', '');
+      actualPath = fileURLToPath(testFile);
     }
 
     const relativeBase = basePath || process.cwd();
@@ -12,4 +13,9 @@ export function getDisplayTestFile(testFile: string, basePath?: string): string 
   } catch {
     return testFile;
   }
+}
+
+export function isPathSafe(t: string, b: string = process.cwd()): boolean {
+  const r = path.relative(path.resolve(b), path.resolve(b, t));
+  return !r.startsWith('..' + path.sep) && r !== '..';
 }
