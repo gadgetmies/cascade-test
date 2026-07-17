@@ -19,7 +19,7 @@ import {
 import * as path from "path";
 import * as fs from "fs";
 import { TestSummary } from "../types.js";
-import { getDisplayTestFile } from "../lib/path-utils.js";
+import { getDisplayTestFile, isPathSafe } from "../lib/path-utils.js";
 import { forkExecArgvForScript } from "../lib/fork-ts-script.js";
 import "colors";
 
@@ -347,6 +347,22 @@ cli
       try {
         assertNoUnknownPositionalArgs(argv);
         assertBasenameFilterExclusivity(argv);
+        // Security: Validate path to prevent traversal attacks
+        if (argv.output) {
+          const outPath = typeof argv.output === "string" ? argv.output : String(argv.output);
+          if (!isPathSafe(outPath)) {
+            throw new Error(`Security Error: Output path '${outPath}' is outside CWD.`);
+          }
+        }
+        if (argv.coverage) {
+          const coverageDir = typeof argv.coverageDir === "string" ? argv.coverageDir : "coverage";
+          if (!isPathSafe(coverageDir)) {
+            throw new Error(`Security Error: Coverage directory '${coverageDir}' is outside CWD.`);
+          }
+          if (path.resolve(coverageDir) === process.cwd()) {
+            throw new Error("Security Error: Cannot use CWD as coverage directory.");
+          }
+        }
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
         console.error(msg);
