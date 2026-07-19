@@ -4,6 +4,7 @@ import { FixtureConfig } from "../types.js";
 import { diff } from "jest-diff";
 import pkg from "lodash";
 const { isEqual } = pkg;
+import { isPathSafe } from "./path-utils.js";
 
 /**
  * Default configuration for fixture operations
@@ -36,6 +37,9 @@ function getFixturePath(
   config: Required<FixtureConfig>
 ): string {
   const fixtureDir = getFixtureDir(callerFile, config.fixturesDir);
+  if (!isPathSafe(fixtureDir, fixtureName)) {
+    throw new Error("Security Error: Path traversal detected");
+  }
   return path.join(fixtureDir, fixtureName);
 }
 
