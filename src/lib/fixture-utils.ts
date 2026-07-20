@@ -36,7 +36,13 @@ function getFixturePath(
   config: Required<FixtureConfig>
 ): string {
   const fixtureDir = getFixtureDir(callerFile, config.fixturesDir);
-  return path.join(fixtureDir, fixtureName);
+  const resolved = path.resolve(fixtureDir, fixtureName);
+  const rel = path.relative(fixtureDir, resolved);
+  // Security: Validate path to prevent traversal attacks
+  if (rel.startsWith("..") || path.isAbsolute(rel)) {
+    throw new Error("Security Error: Path traversal detected");
+  }
+  return resolved;
 }
 
 function ensureFixtureDirExists(fixturePath: string): void {
