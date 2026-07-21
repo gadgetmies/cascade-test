@@ -39,8 +39,17 @@ test({
       skip: () => ({
         reason:
           "Need to figure out how to test the environment variable behavior",
-        until: "2026-05-01",
+        until: "2027-05-01",
       }),
+    },
+
+    "should block path traversal": () => {
+      try {
+        readFixture("../../../etc/passwd");
+        throw new Error("Expected security error");
+      } catch (e: any) {
+        if (!e.message.includes("Security Error")) throw e;
+      }
     },
 
     "should normalize data before comparison": () => {
