@@ -1,0 +1,4 @@
+## 2026-07-15 - Directory Traversal Prevention in Node.js
+**Vulnerability:** Path traversal attacks using relative path specifiers (e.g., `..`) can bypass simple prefix checks or standard `path.resolve` / `path.join` operations if they are not explicitly validated against a safe base directory.
+**Learning:** `path.resolve` and `path.join` normalize paths but do not prevent them from pointing outside the intended base directory. Manual validation with `path.relative` and checking that the relative path does not start with `..` (and is not absolute) is required.
+**Prevention:** Implement a robust `isPathSafe` utility that uses `path.relative` to verify that the resolved target path remains within the base directory, and explicitly check for Windows cross-drive bypasses and non-string inputs.
