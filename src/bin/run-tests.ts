@@ -19,7 +19,7 @@ import {
 import * as path from "path";
 import * as fs from "fs";
 import { TestSummary } from "../types.js";
-import { getDisplayTestFile } from "../lib/path-utils.js";
+import { getDisplayTestFile, isPathSafe } from "../lib/path-utils.js";
 import { forkExecArgvForScript } from "../lib/fork-ts-script.js";
 import "colors";
 
@@ -151,6 +151,11 @@ const main = async (
     coverage?: CoverageOptions;
   } = {}
 ): Promise<void> => {
+  // Security: Validate path to prevent traversal attacks
+  const d = config.coverage?.directory || "coverage";
+  if (config.outputFile && !isPathSafe(config.outputFile)) { console.error(`Security Error: Output path '${config.outputFile}' is outside CWD.`); process.exit(1); }
+  if (config.coverage?.enabled && path.resolve(d) === process.cwd()) { console.error("Security Error: Cannot use CWD as coverage directory."); process.exit(1); }
+  if (config.coverage?.enabled && !isPathSafe(d)) { console.error(`Security Error: Coverage directory '${d}' is outside CWD.`); process.exit(1); }
   const resolvedTestPath = path.resolve(`${process.cwd()}/${testPath}`);
   const candidates = recursivelyFindByRegex(
     resolvedTestPath,

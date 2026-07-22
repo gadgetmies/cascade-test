@@ -30,13 +30,11 @@ function getFixtureDir(callerFile: string, fixturesDir: string): string {
   return path.resolve(testDir, fixturesDir);
 }
 
-function getFixturePath(
-  callerFile: string,
-  fixtureName: string,
-  config: Required<FixtureConfig>
-): string {
-  const fixtureDir = getFixtureDir(callerFile, config.fixturesDir);
-  return path.join(fixtureDir, fixtureName);
+function getFixturePath(callerFile: string, fixtureName: string, config: Required<FixtureConfig>): string {
+  const dir = path.resolve(getFixtureDir(callerFile, config.fixturesDir)), res = path.resolve(dir, fixtureName);
+  const rel = path.relative(dir, res); // Security: Validate path to prevent traversal attacks
+  if (path.isAbsolute(rel) || rel.startsWith(".." + path.sep) || rel === "..") throw new Error("Security Error: Access to fixture outside fixture directory is blocked.");
+  return res;
 }
 
 function ensureFixtureDirExists(fixturePath: string): void {
